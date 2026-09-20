@@ -1,0 +1,66 @@
+You are assisting with data abstraction for a systematic review of reproducibility of visual EEG interpretation of **interictal epileptiform discharges (IEDs) present yes/no**.
+
+The goal is to determine the **temporal unit of analysis** used in the reproducibility study.
+
+Carefully read the paper and extract the following information.
+
+IMPORTANT: Many EEG reproducibility papers describe both the **total EEG recording duration** and the **analytic unit used for the rating task**. These are not the same. Only the analytic unit should be interpreted as the **clip/epoch length**.
+
+Answer the following questions.
+
+1. **Unit of analysis**
+
+Determine what object the raters classified.
+
+Choose one of the following:
+
+* whole_EEG (raters interpreted the entire EEG recording and decided whether epileptiform discharges were present or absent)
+* clip_or_epoch (raters classified short EEG segments such as clips, epochs, pages, or windows)
+* event_detection (raters marked individual spikes or epileptiform events)
+
+Explain briefly how the paper defines the unit being classified.
+
+2. **Clip or epoch length (seconds)**
+
+If the unit of analysis is clip_or_epoch, determine the duration of the EEG segment that raters evaluated.
+
+Examples include:
+
+* 1 second
+* 10 seconds
+* 30 seconds
+* 60 seconds
+* 3-minute segment
+
+Report the duration in **seconds**.
+
+If the study does not use clips or epochs, write **NA**.
+
+3. **Length of EEG recording reviewed (minutes)**
+
+Determine the approximate duration of EEG data that raters reviewed in each case.
+
+Examples include:
+
+* 20-minute routine EEG
+* 24-hour EEG monitoring
+* 6-hour EEG segment
+
+Report the duration in **minutes**.
+
+If the paper does not provide this information, write **unclear**.
+
+4. **Evidence from the paper**
+
+Quote or summarize the specific sentence(s) in the paper that justify your answers.
+
+5. **Final structured output**
+
+Provide the result in this exact format:
+
+REFID:
+Unit_of_analysis:
+Clip_length_seconds:
+EEG_length_minutes:
+Notes:
+Evidence:

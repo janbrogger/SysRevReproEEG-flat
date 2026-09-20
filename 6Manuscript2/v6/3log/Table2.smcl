@@ -1,0 +1,1567 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:\Midlertidig_Lagring\SysRevReproEeg\6Manuscript2\v1\3log/Table2.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Feb 2026, 17:09:58
+{txt}
+{com}. 
+. pwd
+{res}C:\Midlertidig_Lagring\SysRevReproEeg\6Manuscript2\v1
+{txt}
+{com}. di "Script expects working directory to be 6Manuscript2/v1/"
+{res}Script expects working directory to be 6Manuscript2/v1/
+{txt}
+{com}. 
+. *==============================================================================
+. * Load filtered data (same as Figure 1)
+. *==============================================================================
+. 
+. cap confirm file "2data/filtered_data.dta"
+{txt}
+{com}. use "2data/filtered_data.dta", clear
+{txt}
+{com}. count
+  {res}169
+{txt}
+{com}. local totalobs = `r(N)'
+{txt}
+{com}. di "Total observations loaded: `totalobs'"
+{res}Total observations loaded: 169
+{txt}
+{com}. 
+. *==============================================================================
+. * Create EEG Setting variable (same as Figure 1)
+. *==============================================================================
+. 
+. cap drop gEEGSetting
+{txt}
+{com}. gen gEEGSetting = ""
+{txt}(169 missing values generated)
+
+{com}. replace gEEGSetting = "Epilepsy" if Q019TypeofEEGsettingbroad == "Epilepsy"
+{txt}variable {bf}{res}gEEGSetting{sf}{txt} was {bf}{res}str1{sf}{txt} now {bf}{res}str8{sf}
+{txt}(136 real changes made)
+
+{com}. replace gEEGSetting = "Acute Brain" if Q019TypeofEEGsettingbroad == "Coma/critical care, not neonatal or status epilepticus"
+{txt}variable {bf}{res}gEEGSetting{sf}{txt} was {bf}{res}str8{sf}{txt} now {bf}{res}str11{sf}
+{txt}(15 real changes made)
+
+{com}. replace gEEGSetting = "Other" if gEEGSetting == ""
+{txt}(18 real changes made)
+
+{com}. tab gEEGSetting
+
+{txt}gEEGSetting {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+Acute Brain {c |}{res}         15        8.88        8.88
+{txt}   Epilepsy {c |}{res}        136       80.47       89.35
+{txt}      Other {c |}{res}         18       10.65      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        169      100.00
+{txt}
+{com}. 
+. *==============================================================================
+. * Create ShortClips variable (same as Figure 1)
+. *==============================================================================
+. 
+. cap drop ShortClips
+{txt}
+{com}. gen ShortClips = Q010AreonlyshortEEGclipsbe
+{txt}
+{com}. di _n "=== ShortClips classification ==="
+{res}
+=== ShortClips classification ===
+{txt}
+{com}. tab ShortClips
+
+ {txt}ShortClips {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         No {c |}{res}         87       51.48       51.48
+{txt}        Yes {c |}{res}         82       48.52      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        169      100.00
+{txt}
+{com}. tab Author ShortClips if ShortClips == "Yes", mis
+
+                      {txt}{c |} ShortClips
+               Author {c |}       Yes {c |}     Total
+{hline 22}{c +}{hline 11}{c +}{hline 10}
+               Ahrens {c |}{res}         4 {txt}{c |}{res}         4 
+{txt}              Bagheri {c |}{res}         1 {txt}{c |}{res}         1 
+{txt}             Benarous {c |}{res}         2 {txt}{c |}{res}         2 
+{txt}             Bridgers {c |}{res}         1 {txt}{c |}{res}         1 
+{txt}              Halford {c |}{res}         7 {txt}{c |}{res}         7 
+{txt}                Kural {c |}{res}        13 {txt}{c |}{res}        13 
+{txt}               Nariai {c |}{res}         2 {txt}{c |}{res}         2 
+{txt}                Pinon {c |}{res}         1 {txt}{c |}{res}         1 
+{txt}                 Yuan {c |}{res}        15 {txt}{c |}{res}        15 
+{txt}             Zijlmans {c |}{res}        36 {txt}{c |}{res}        36 
+{txt}{hline 22}{c +}{hline 11}{c +}{hline 10}
+                Total {c |}{res}        82 {txt}{c |}{res}        82 
+{txt}
+{com}. 
+. *==============================================================================
+. * Keep only Agreement and Kappa-type statistics (same as Figure 1)
+. *==============================================================================
+. 
+. tab agreementType3
+
+                 {txt}Agreement type {c |}      Freq.     Percent        Cum.
+{hline 32}{c +}{hline 35}
+                      Agreement {c |}{res}         32       18.93       18.93
+{txt}                     Kappa-type {c |}{res}        137       81.07      100.00
+{txt}{hline 32}{c +}{hline 35}
+                          Total {c |}{res}        169      100.00
+{txt}
+{com}. keep if agreementType3 == "Agreement" | agreementType3 == "Kappa-type"
+{txt}(0 observations deleted)
+
+{com}. count
+  {res}169
+{txt}
+{com}. di "Observations after filtering to Agreement/Kappa-type: `r(N)'"
+{res}Observations after filtering to Agreement/Kappa-type: 169
+{txt}
+{com}. 
+. *==============================================================================
+. * Create derived variables for stratification
+. *==============================================================================
+. 
+. * --- Rater experience (matching seizure paper approach) ---
+. * Collapse to Experienced (Expert + Experienced + Probably experienced)
+. * vs Inexperienced (Nonexpert + Inexperienced)
+. gen raterExp3 = ""
+{txt}(169 missing values generated)
+
+{com}. replace raterExp3 = "Experienced" if inlist(RaterExpOurAssessed, "Experienced", "Expert", "Probably experienced")
+{txt}variable {bf}{res}raterExp3{sf}{txt} was {bf}{res}str1{sf}{txt} now {bf}{res}str11{sf}
+{txt}(13 real changes made)
+
+{com}. replace raterExp3 = "Inexperienced" if inlist(RaterExpOurAssessed, "Nonexpert", "Inexperienced")
+{txt}(0 real changes made)
+
+{com}. di _n "=== Rater experience ==="
+{res}
+=== Rater experience ===
+{txt}
+{com}. tab raterExp3, mis
+
+  {txt}raterExp3 {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+            {c |}{res}        156       92.31       92.31
+{txt}Experienced {c |}{res}         13        7.69      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        169      100.00
+{txt}
+{com}. 
+. * --- Encode string variables for table command ---
+. encode intra_or_inter, gen(intra2)
+{txt}
+{com}. label variable intra2 "Rating type"
+{txt}
+{com}. 
+. encode ShortClips, gen(ShortClips2)
+{txt}
+{com}. label variable ShortClips2 "Short clips"
+{txt}
+{com}. 
+. encode gEEGSetting, gen(gEEGSetting2)
+{txt}
+{com}. label variable gEEGSetting2 "Clinical setting"
+{txt}
+{com}. 
+. encode raterExp3, gen(raterExp4)
+{txt}
+{com}. label variable raterExp4 "Rater experience"
+{txt}
+{com}. 
+. encode agreementType3, gen(gAgreementType3)
+{txt}
+{com}. label variable gAgreementType3 "Statistic"
+{txt}
+{com}. 
+. *==============================================================================
+. * Diagnostics: cross-tabs to understand cell sizes
+. *==============================================================================
+. 
+. di _n "=== Cross-tabulation: Agreement type × Rating type ==="
+{res}
+=== Cross-tabulation: Agreement type × Rating type ===
+{txt}
+{com}. tab gAgreementType3 intra2
+
+           {txt}{c |}      Rating type
+ Statistic {c |}        No        Yes {c |}     Total
+{hline 11}{c +}{hline 22}{c +}{hline 10}
+ Agreement {c |}{res}        26          6 {txt}{c |}{res}        32 
+{txt}Kappa-type {c |}{res}       113         17 {txt}{c |}{res}       130 
+{txt}{hline 11}{c +}{hline 22}{c +}{hline 10}
+     Total {c |}{res}       139         23 {txt}{c |}{res}       162 
+{txt}
+{com}. 
+. di _n "=== Cross-tabulation: Agreement type × Short clips ==="
+{res}
+=== Cross-tabulation: Agreement type × Short clips ===
+{txt}
+{com}. tab gAgreementType3 ShortClips2
+
+           {txt}{c |}      Short clips
+ Statistic {c |}        No        Yes {c |}     Total
+{hline 11}{c +}{hline 22}{c +}{hline 10}
+ Agreement {c |}{res}        29          3 {txt}{c |}{res}        32 
+{txt}Kappa-type {c |}{res}        58         79 {txt}{c |}{res}       137 
+{txt}{hline 11}{c +}{hline 22}{c +}{hline 10}
+     Total {c |}{res}        87         82 {txt}{c |}{res}       169 
+{txt}
+{com}. 
+. di _n "=== Cross-tabulation: Agreement type × Clinical setting ==="
+{res}
+=== Cross-tabulation: Agreement type × Clinical setting ===
+{txt}
+{com}. tab gAgreementType3 gEEGSetting2
+
+           {txt}{c |}         Clinical setting
+ Statistic {c |} Acute Bra   Epilepsy      Other {c |}     Total
+{hline 11}{c +}{hline 33}{c +}{hline 10}
+ Agreement {c |}{res}         0         25          7 {txt}{c |}{res}        32 
+{txt}Kappa-type {c |}{res}        15        111         11 {txt}{c |}{res}       137 
+{txt}{hline 11}{c +}{hline 33}{c +}{hline 10}
+     Total {c |}{res}        15        136         18 {txt}{c |}{res}       169 
+{txt}
+{com}. 
+. di _n "=== Cross-tabulation: Agreement type × Rater experience ==="
+{res}
+=== Cross-tabulation: Agreement type × Rater experience ===
+{txt}
+{com}. tab gAgreementType3 raterExp4, mis
+
+           {txt}{c |}   Rater experience
+ Statistic {c |} Experienc          . {c |}     Total
+{hline 11}{c +}{hline 22}{c +}{hline 10}
+ Agreement {c |}{res}         3         29 {txt}{c |}{res}        32 
+{txt}Kappa-type {c |}{res}        10        127 {txt}{c |}{res}       137 
+{txt}{hline 11}{c +}{hline 22}{c +}{hline 10}
+     Total {c |}{res}        13        156 {txt}{c |}{res}       169 
+{txt}
+{com}. 
+. di _n "=== Data points per study (REFID) - interrater kappa ==="
+{res}
+=== Data points per study (REFID) - interrater kappa ===
+{txt}
+{com}. tab Author if agreementType3 == "Kappa-type" & intra_or_inter == "No"
+
+               {txt}Author {c |}      Freq.     Percent        Cum.
+{hline 22}{c +}{hline 35}
+                Abend {c |}{res}          1        0.88        0.88
+{txt}               Ahrens {c |}{res}          4        3.54        4.42
+{txt}                Azuma {c |}{res}          2        1.77        6.19
+{txt}              Backman {c |}{res}          2        1.77        7.96
+{txt}              Bagheri {c |}{res}          1        0.88        8.85
+{txt}             Benarous {c |}{res}          2        1.77       10.62
+{txt}             Beniczky {c |}{res}          1        0.88       11.50
+{txt}              Beuchat {c |}{res}          1        0.88       12.39
+{txt}              Halford {c |}{res}          6        5.31       17.70
+{txt}                 Jing {c |}{res}          2        1.77       19.47
+{txt}         Kulick-Soper {c |}{res}          3        2.65       22.12
+{txt}                Kural {c |}{res}          6        5.31       27.43
+{txt}                  Lee {c |}{res}          1        0.88       28.32
+{txt}             McKenzie {c |}{res}          1        0.88       29.20
+{txt}             Mohammad {c |}{res}          1        0.88       30.09
+{txt}               Nariai {c |}{res}          1        0.88       30.97
+{txt}            Nonclercq {c |}{res}          3        2.65       33.63
+{txt}           Piccinelli {c |}{res}          3        2.65       36.28
+{txt}              Stroink {c |}{res}          2        1.77       38.05
+{txt}Tjepkema-Cloostermans {c |}{res}         23       20.35       58.41
+{txt}                  Yim {c |}{res}          2        1.77       60.18
+{txt}                 Yuan {c |}{res}          6        5.31       65.49
+{txt}             Zijlmans {c |}{res}         36       31.86       97.35
+{txt}        van Donselaar {c |}{res}          3        2.65      100.00
+{txt}{hline 22}{c +}{hline 35}
+                Total {c |}{res}        113      100.00
+{txt}
+{com}. 
+. *==============================================================================
+. * PART A: Data-point-level summary statistics
+. * (Consistent with published seizure paper Table 4)
+. *==============================================================================
+. 
+. di _n(3) "============================================================"
+{res}
+
+
+============================================================
+{txt}
+{com}. di "PART A: DATA-POINT-LEVEL MEDIANS"
+{res}PART A: DATA-POINT-LEVEL MEDIANS
+{txt}
+{com}. di "(Each data point counts equally, as in Aanestad et al. 2024)"
+{res}(Each data point counts equally, as in Aanestad et al. 2024)
+{txt}
+{com}. di "============================================================"
+{res}============================================================
+{txt}
+{com}. 
+. * --- Table A1: Agreement type × Short Clips × Intra/Inter ---
+. di _n "=== Table A1: Statistic × Study design × Rating type ==="
+{res}
+=== Table A1: Statistic × Study design × Rating type ===
+{txt}
+{com}. table (gAgreementType3 ShortClips2) (intra2), ///
+>         nototal ///
+>         stat(median agreementvalue) ///
+>         stat(min agreementvalue) ///
+>         stat(max agreementvalue) ///
+>         stat(count agreementvalue)
+{res}
+{smcl}
+{reset}{...}
+{hline 35}{c -}{c TT}{c -}{c -}{hline 5}{c -}{c -}{c -}{hline 5}
+{space 35} {c |}  {space 1}Rating type{space 1}
+{space 35} {c |}  {space 3}No   {space 2}Yes
+{hline 35}{c -}{c +}{c -}{c -}{hline 5}{c -}{c -}{c -}{hline 5}
+Statistic{space 26} {c |}  {space 5}   {space 5}
+  Agreement{space 24} {c |}  {space 5}   {space 5}
+    Short clips{space 20} {c |}  {space 5}   {space 5}
+      No{space 27} {c |}  {space 5}   {space 5}
+        Median{space 21} {c |}  {space 1}{result:.685}   {result:.8531}
+        Minimum value{space 14} {c |}  {space 2}{result:.07}   {result:.8392}
+        Maximum value{space 14} {c |}  {space 2}{result:.98}   {result:.9161}
+        Number of nonmissing values {c |}  {space 3}{result:24}   {space 4}{result:5}
+      Yes{space 26} {c |}  {space 5}   {space 5}
+        Median{space 21} {c |}  {result:.8701}   {space 2}{result:.82}
+        Minimum value{space 14} {c |}  {space 3}{result:.8}   {space 2}{result:.82}
+        Maximum value{space 14} {c |}  {result:.9402}   {space 2}{result:.82}
+        Number of nonmissing values {c |}  {space 4}{result:2}   {space 4}{result:1}
+  Kappa-type{space 23} {c |}  {space 5}   {space 5}
+    Short clips{space 20} {c |}  {space 5}   {space 5}
+      No{space 27} {c |}  {space 5}   {space 5}
+        Median{space 21} {c |}  {space 2}{result:.77}   {result:.7978}
+        Minimum value{space 14} {c |}  {space 3}{result:.1}   {result:.5802}
+        Maximum value{space 14} {c |}  {space 4}{result:1}   {space 2}{result:.94}
+        Number of nonmissing values {c |}  {space 3}{result:51}   {space 4}{result:7}
+      Yes{space 26} {c |}  {space 5}   {space 5}
+        Median{space 21} {c |}  {result:.4855}   {result:.6715}
+        Minimum value{space 14} {c |}  {space 4}{result:0}   {space 2}{result:.33}
+        Maximum value{space 14} {c |}  {space 2}{result:.82}   {space 1}{result:.847}
+        Number of nonmissing values {c |}  {space 3}{result:62}   {space 3}{result:10}
+{hline 35}{c -}{c BT}{c -}{c -}{hline 5}{c -}{c -}{c -}{hline 5}
+
+{com}. 
+. local outA1 "4output/Table 2A1 IED Summary - by design and rater type.xlsx"
+{txt}
+{com}. collect export "`outA1'", replace
+{res}{txt}{p 0 1 2}
+(collection {res:Table} exported to file {browse "C:/Midlertidig_Lagring/SysRevReproEeg/6Manuscript2/v1/4output/Table 2A1 IED Summary - by design and rater type.xlsx":4output/Table 2A1 IED Summary - by design and rater type.xlsx})
+{p_end}
+
+{com}. cap {c -(}
+{txt}
+{com}. 
+. * --- Table A2: Agreement type × Short Clips × Clinical setting ---
+. di _n "=== Table A2: Statistic × Study design × Clinical setting ==="
+{res}
+=== Table A2: Statistic × Study design × Clinical setting ===
+{txt}
+{com}. table (gAgreementType3 ShortClips2) (intra2 gEEGSetting2), ///
+>         nototal ///
+>         stat(median agreementvalue) ///
+>         stat(min agreementvalue) ///
+>         stat(max agreementvalue) ///
+>         stat(count agreementvalue)
+{res}
+{smcl}
+{reset}{...}
+{hline 35}{c -}{c TT}{c -}{c -}{hline 11}{c -}{c -}{c -}{hline 8}{c -}{c -}{c -}{hline 5}{c -}{c -}{c -}{hline 11}{c -}{c -}{c -}{hline 8}{c -}{c -}{c -}{hline 6}
+{space 35} {c |}  {space 27}Rating type{space 26}
+{space 35} {c |}  {space 14}No{space 14}   {space 14}Yes{space 14}
+{space 35} {c |}  {space 7}Clinical setting{space 7}   {space 8}Clinical setting{space 7}
+{space 35} {c |}  Acute Brain   Epilepsy   Other   Acute Brain   Epilepsy   {space 1}Other
+{hline 35}{c -}{c +}{c -}{c -}{hline 11}{c -}{c -}{c -}{hline 8}{c -}{c -}{c -}{hline 5}{c -}{c -}{c -}{hline 11}{c -}{c -}{c -}{hline 8}{c -}{c -}{c -}{hline 6}
+Statistic{space 26} {c |}  {space 11}   {space 8}   {space 5}   {space 11}   {space 8}   {space 6}
+  Agreement{space 24} {c |}  {space 11}   {space 8}   {space 5}   {space 11}   {space 8}   {space 6}
+    Short clips{space 20} {c |}  {space 11}   {space 8}   {space 5}   {space 11}   {space 8}   {space 6}
+      No{space 27} {c |}  {space 11}   {space 8}   {space 5}   {space 11}   {space 8}   {space 6}
+        Median{space 21} {c |}  {space 11}   {space 5}{result:.68}   {space 2}{result:.78}   {space 11}   {space 5}{result:.86}   {result:.84965}
+        Minimum value{space 14} {c |}  {space 11}   {space 5}{result:.07}   {space 3}{result:.4}   {space 11}   {space 5}{result:.86}   {space 1}{result:.8392}
+        Maximum value{space 14} {c |}  {space 11}   {space 6}{result:.9}   {space 2}{result:.98}   {space 11}   {space 5}{result:.86}   {space 1}{result:.9161}
+        Number of nonmissing values {c |}  {space 11}   {space 6}{result:21}   {space 4}{result:3}   {space 11}   {space 7}{result:1}   {space 5}{result:4}
+      Yes{space 26} {c |}  {space 11}   {space 8}   {space 5}   {space 11}   {space 8}   {space 6}
+        Median{space 21} {c |}  {space 11}   {space 3}{result:.8701}   {space 5}   {space 11}   {space 5}{result:.82}   {space 6}
+        Minimum value{space 14} {c |}  {space 11}   {space 6}{result:.8}   {space 5}   {space 11}   {space 5}{result:.82}   {space 6}
+        Maximum value{space 14} {c |}  {space 11}   {space 3}{result:.9402}   {space 5}   {space 11}   {space 5}{result:.82}   {space 6}
+        Number of nonmissing values {c |}  {space 11}   {space 7}{result:2}   {space 5}   {space 11}   {space 7}{result:1}   {space 6}
+  Kappa-type{space 23} {c |}  {space 11}   {space 8}   {space 5}   {space 11}   {space 8}   {space 6}
+    Short clips{space 20} {c |}  {space 11}   {space 8}   {space 5}   {space 11}   {space 8}   {space 6}
+      No{space 27} {c |}  {space 11}   {space 8}   {space 5}   {space 11}   {space 8}   {space 6}
+        Median{space 21} {c |}  {space 7}{result:.435}   {space 5}{result:.78}   {space 2}{result:.66}   {space 8}{result:.94}   {space 8}   {result:.61635}
+        Minimum value{space 14} {c |}  {space 9}{result:.1}   {space 5}{result:.41}   {space 2}{result:.23}   {space 8}{result:.82}   {space 8}   {space 1}{result:.5802}
+        Maximum value{space 14} {c |}  {space 8}{result:.74}   {space 7}{result:1}   {space 4}{result:1}   {space 8}{result:.94}   {space 8}   {space 1}{result:.7978}
+        Number of nonmissing values {c |}  {space 10}{result:6}   {space 6}{result:39}   {space 4}{result:6}   {space 10}{result:3}   {space 8}   {space 5}{result:4}
+      Yes{space 26} {c |}  {space 11}   {space 8}   {space 5}   {space 11}   {space 8}   {space 6}
+        Median{space 21} {c |}  {space 7}{result:.345}   {space 5}{result:.49}   {space 2}{result:.81}   {space 11}   {space 3}{result:.6715}   {space 6}
+        Minimum value{space 14} {c |}  {space 8}{result:.18}   {space 7}{result:0}   {space 2}{result:.81}   {space 11}   {space 5}{result:.33}   {space 6}
+        Maximum value{space 14} {c |}  {space 8}{result:.82}   {space 5}{result:.77}   {space 2}{result:.81}   {space 11}   {space 4}{result:.847}   {space 6}
+        Number of nonmissing values {c |}  {space 10}{result:6}   {space 6}{result:55}   {space 4}{result:1}   {space 11}   {space 6}{result:10}   {space 6}
+{hline 35}{c -}{c BT}{c -}{c -}{hline 11}{c -}{c -}{c -}{hline 8}{c -}{c -}{c -}{hline 5}{c -}{c -}{c -}{hline 11}{c -}{c -}{c -}{hline 8}{c -}{c -}{c -}{hline 6}
+
+{com}. 
+. local outA2 "4output/Table 2A2 IED Summary - by design setting rater.xlsx"
+{txt}
+{com}. collect export "`outA2'", replace
+{res}{txt}{p 0 1 2}
+(collection {res:Table} exported to file {browse "C:/Midlertidig_Lagring/SysRevReproEeg/6Manuscript2/v1/4output/Table 2A2 IED Summary - by design setting rater.xlsx":4output/Table 2A2 IED Summary - by design setting rater.xlsx})
+{p_end}
+
+{com}. cap {c -(}
+{txt}
+{com}. 
+. * --- Table A3: Agreement type × Short Clips × Rater experience ---
+. di _n "=== Table A3: Statistic × Study design × Rater experience ==="
+{res}
+=== Table A3: Statistic × Study design × Rater experience ===
+{txt}
+{com}. table (gAgreementType3 ShortClips2) (intra2 raterExp4), ///
+>         nototal ///
+>         stat(median agreementvalue) ///
+>         stat(min agreementvalue) ///
+>         stat(max agreementvalue) ///
+>         stat(count agreementvalue)
+{res}
+{smcl}
+{reset}{...}
+{hline 35}{c -}{c TT}{c -}{c -}{hline 16}
+{space 35} {c |}  {space 3}Rating type{space 2}
+{space 35} {c |}  {space 14}No
+{space 35} {c |}  Rater experience
+{space 35} {c |}  {space 5}Experienced
+{hline 35}{c -}{c +}{c -}{c -}{hline 16}
+Statistic{space 26} {c |}  {space 16}
+  Agreement{space 24} {c |}  {space 16}
+    Short clips{space 20} {c |}  {space 16}
+      No{space 27} {c |}  {space 16}
+        Median{space 21} {c |}  {space 14}{result:.9}
+        Minimum value{space 14} {c |}  {space 14}{result:.9}
+        Maximum value{space 14} {c |}  {space 14}{result:.9}
+        Number of nonmissing values {c |}  {space 15}{result:3}
+  Kappa-type{space 23} {c |}  {space 16}
+    Short clips{space 20} {c |}  {space 16}
+      No{space 27} {c |}  {space 16}
+        Median{space 21} {c |}  {space 12}{result:.755}
+        Minimum value{space 14} {c |}  {space 13}{result:.36}
+        Maximum value{space 14} {c |}  {space 13}{result:.77}
+        Number of nonmissing values {c |}  {space 15}{result:4}
+      Yes{space 26} {c |}  {space 16}
+        Median{space 21} {c |}  {space 12}{result:.345}
+        Minimum value{space 14} {c |}  {space 13}{result:.18}
+        Maximum value{space 14} {c |}  {space 13}{result:.82}
+        Number of nonmissing values {c |}  {space 15}{result:6}
+{hline 35}{c -}{c BT}{c -}{c -}{hline 16}
+
+{com}. 
+. local outA3 "4output/Table 2A3 IED Summary - by design experience rater.xlsx"
+{txt}
+{com}. collect export "`outA3'", replace
+{res}{txt}{p 0 1 2}
+(collection {res:Table} exported to file {browse "C:/Midlertidig_Lagring/SysRevReproEeg/6Manuscript2/v1/4output/Table 2A3 IED Summary - by design experience rater.xlsx":4output/Table 2A3 IED Summary - by design experience rater.xlsx})
+{p_end}
+
+{com}. cap {c -(}
+{txt}
+{com}. 
+. *==============================================================================
+. * PART B: Study-level summary statistics
+. * (First collapse to one median per REFID within each stratum,
+. *  then compute median across studies)
+. *==============================================================================
+. 
+. di _n(3) "============================================================"
+{res}
+
+
+============================================================
+{txt}
+{com}. di "PART B: STUDY-LEVEL MEDIANS"
+{res}PART B: STUDY-LEVEL MEDIANS
+{txt}
+{com}. di "(First median per REFID, then median across studies)"
+{res}(First median per REFID, then median across studies)
+{txt}
+{com}. di "============================================================"
+{res}============================================================
+{txt}
+{com}. 
+. * Save working dataset
+. global working "2data/temp_table2_working.dta"
+{txt}
+{com}. save "$working", replace
+{txt}{p 0 4 2}
+file {bf}
+2data/temp_table2_working.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. * --- Helper program to compute study-level stats ---
+. * Collapses to one median per REFID, then reports median, min, max, count
+. * across studies for a given stratum
+. 
+. cap program drop study_level_stats
+{txt}
+{com}. program define study_level_stats
+{txt}  1{com}.         syntax , BY(string) [Title(string)]
+{txt}  2{com}. 
+.         di _n "=== `title' ==="
+{txt}  3{com}.         di "Stratified by: `by'"
+{txt}  4{com}. 
+.         use "$working", clear
+{txt}  5{com}. 
+.         * Collapse to one median per REFID within each stratum
+.         collapse (median) med_agreement = agreementvalue ///
+>                 (count) n_datapoints = agreementvalue, ///
+>                 by(REFID `by')
+{txt}  6{com}. 
+.         * Now summarize across studies within each stratum combination
+.         di _n "Study-level statistics (each study counts once):"
+{txt}  7{com}.         table (`by'), ///
+>                 nototal ///
+>                 stat(median med_agreement) ///
+>                 stat(min med_agreement) ///
+>                 stat(max med_agreement) ///
+>                 stat(count med_agreement)
+{txt}  8{com}. 
+.         * Also show as bysort for log readability
+.         di _n "Detail by stratum:"
+{txt}  9{com}.         bysort `by': summ med_agreement, det
+{txt} 10{com}. end
+{txt}
+{com}. 
+. * --- Table B1: Agreement type × Short Clips × Intra/Inter ---
+. study_level_stats, by(gAgreementType3 ShortClips2 intra2) ///
+>         title("Table B1: Study-level - Statistic × Study design × Rating type")
+
+=== Table B1: Study-level - Statistic × Study design × Rating type ===
+Stratified by: gAgreementType3 ShortClips2 intra2
+{res}
+Study-level statistics (each study counts once):
+
+{smcl}
+{reset}{...}
+{hline 19}{c -}{c TT}{c -}{c -}{hline 7}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 27}
+{space 19} {c |}  {space 1}Median   Minimum value   Maximum value   Number of nonmissing values
+{hline 19}{c -}{c +}{c -}{c -}{hline 7}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 27}
+Statistic{space 10} {c |}  {space 7}   {space 13}   {space 13}   {space 27}
+  Agreement{space 8} {c |}  {space 7}   {space 13}   {space 13}   {space 27}
+    Short clips{space 4} {c |}  {space 7}   {space 13}   {space 13}   {space 27}
+      No{space 11} {c |}  {space 7}   {space 13}   {space 13}   {space 27}
+        Rating type {c |}  {space 7}   {space 13}   {space 13}   {space 27}
+          No{space 7} {c |}  {space 1}{result:.72825}   {space 9}{result:.132}   {space 10}{result:.98}   {space 25}{result:10}
+          Yes{space 6} {c |}  {result:.854825}   {space 7}{result:.84965}   {space 10}{result:.86}   {space 26}{result:2}
+      Yes{space 10} {c |}  {space 7}   {space 13}   {space 13}   {space 27}
+        Rating type {c |}  {space 7}   {space 13}   {space 13}   {space 27}
+          No{space 7} {c |}  {space 2}{result:.8701}   {space 11}{result:.8}   {space 8}{result:.9402}   {space 26}{result:2}
+          Yes{space 6} {c |}  {space 4}{result:.82}   {space 10}{result:.82}   {space 10}{result:.82}   {space 26}{result:1}
+  Kappa-type{space 7} {c |}  {space 7}   {space 13}   {space 13}   {space 27}
+    Short clips{space 4} {c |}  {space 7}   {space 13}   {space 13}   {space 27}
+      No{space 11} {c |}  {space 7}   {space 13}   {space 13}   {space 27}
+        Rating type {c |}  {space 7}   {space 13}   {space 13}   {space 27}
+          No{space 7} {c |}  {space 3}{result:.645}   {space 10}{result:.23}   {space 12}{result:1}   {space 25}{result:16}
+          Yes{space 6} {c |}  {result:.778175}   {space 7}{result:.61635}   {space 10}{result:.94}   {space 26}{result:2}
+      Yes{space 10} {c |}  {space 7}   {space 13}   {space 13}   {space 27}
+        Rating type {c |}  {space 7}   {space 13}   {space 13}   {space 27}
+          No{space 7} {c |}  {space 1}{result:.47575}   {space 10}{result:.31}   {space 10}{result:.81}   {space 25}{result:12}
+          Yes{space 6} {c |}  {space 3}{result:.502}   {space 10}{result:.33}   {space 9}{result:.674}   {space 26}{result:2}
+{hline 19}{c -}{c BT}{c -}{c -}{hline 7}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 27}
+
+Detail by stratum:
+
+{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = No, intra2 = No
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}     .132           .132
+{txt} 5%    {res}     .132           .325
+{txt}10%    {res}    .2285             .4       {txt}Obs         {res}         10
+{txt}25%    {res}       .4           .458       {txt}Sum of wgt. {res}         10
+
+{txt}50%    {res}   .72825                      {txt}Mean          {res}   .62215
+                        {txt}Largest       Std. dev.     {res} .2766122
+{txt}75%    {res}      .79            .78
+{txt}90%    {res}      .94            .79       {txt}Variance      {res} .0765143
+{txt}95%    {res}      .98             .9       {txt}Skewness      {res}-.4433871
+{txt}99%    {res}      .98            .98       {txt}Kurtosis      {res} 1.959156
+
+{txt}{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = No, intra2 = Yes
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}   .84965         .84965
+{txt} 5%    {res}   .84965            .86
+{txt}10%    {res}   .84965              .       {txt}Obs         {res}          2
+{txt}25%    {res}   .84965              .       {txt}Sum of wgt. {res}          2
+
+{txt}50%    {res}  .854825                      {txt}Mean          {res}  .854825
+                        {txt}Largest       Std. dev.     {res} .0073186
+{txt}75%    {res}      .86              .
+{txt}90%    {res}      .86              .       {txt}Variance      {res} .0000536
+{txt}95%    {res}      .86         .84965       {txt}Skewness      {res} 3.21e-14
+{txt}99%    {res}      .86            .86       {txt}Kurtosis      {res}        1
+
+{txt}{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = Yes, intra2 = No
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}       .8             .8
+{txt} 5%    {res}       .8          .9402
+{txt}10%    {res}       .8              .       {txt}Obs         {res}          2
+{txt}25%    {res}       .8              .       {txt}Sum of wgt. {res}          2
+
+{txt}50%    {res}    .8701                      {txt}Mean          {res}    .8701
+                        {txt}Largest       Std. dev.     {res} .0991364
+{txt}75%    {res}    .9402              .
+{txt}90%    {res}    .9402              .       {txt}Variance      {res}  .009828
+{txt}95%    {res}    .9402             .8       {txt}Skewness      {res}        0
+{txt}99%    {res}    .9402          .9402       {txt}Kurtosis      {res}        1
+
+{txt}{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = Yes, intra2 = Yes
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .82            .82
+{txt} 5%    {res}      .82              .
+{txt}10%    {res}      .82              .       {txt}Obs         {res}          1
+{txt}25%    {res}      .82              .       {txt}Sum of wgt. {res}          1
+
+{txt}50%    {res}      .82                      {txt}Mean          {res}      .82
+                        {txt}Largest       Std. dev.     {res}        .
+{txt}75%    {res}      .82              .
+{txt}90%    {res}      .82              .       {txt}Variance      {res}        .
+{txt}95%    {res}      .82              .       {txt}Skewness      {res}        .
+{txt}99%    {res}      .82            .82       {txt}Kurtosis      {res}        .
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = No, intra2 = No
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .23            .23
+{txt} 5%    {res}      .23            .26
+{txt}10%    {res}      .26            .36       {txt}Obs         {res}         16
+{txt}25%    {res}     .535             .5       {txt}Sum of wgt. {res}         16
+
+{txt}50%    {res}     .645                      {txt}Mean          {res} .6406563
+                        {txt}Largest       Std. dev.     {res} .2254171
+{txt}75%    {res}    .7925           .815
+{txt}90%    {res}      .98            .82       {txt}Variance      {res} .0508129
+{txt}95%    {res}        1            .98       {txt}Skewness      {res}-.2980126
+{txt}99%    {res}        1              1       {txt}Kurtosis      {res} 2.434142
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = No, intra2 = Yes
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}   .61635         .61635
+{txt} 5%    {res}   .61635            .94
+{txt}10%    {res}   .61635              .       {txt}Obs         {res}          2
+{txt}25%    {res}   .61635              .       {txt}Sum of wgt. {res}          2
+
+{txt}50%    {res}  .778175                      {txt}Mean          {res}  .778175
+                        {txt}Largest       Std. dev.     {res} .2288551
+{txt}75%    {res}      .94              .
+{txt}90%    {res}      .94              .       {txt}Variance      {res} .0523747
+{txt}95%    {res}      .94         .61635       {txt}Skewness      {res}        0
+{txt}99%    {res}      .94            .94       {txt}Kurtosis      {res}        1
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = Yes, intra2 = No
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .31            .31
+{txt} 5%    {res}      .31            .31
+{txt}10%    {res}      .31           .345       {txt}Obs         {res}         12
+{txt}25%    {res}    .3875            .43       {txt}Sum of wgt. {res}         12
+
+{txt}50%    {res}   .47575                      {txt}Mean          {res}  .496375
+                        {txt}Largest       Std. dev.     {res} .1535917
+{txt}75%    {res}     .585            .57
+{txt}90%    {res}     .705             .6       {txt}Variance      {res} .0235904
+{txt}95%    {res}      .81           .705       {txt}Skewness      {res} .6415872
+{txt}99%    {res}      .81            .81       {txt}Kurtosis      {res} 2.617156
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = Yes, intra2 = Yes
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .33            .33
+{txt} 5%    {res}      .33           .674
+{txt}10%    {res}      .33              .       {txt}Obs         {res}          2
+{txt}25%    {res}      .33              .       {txt}Sum of wgt. {res}          2
+
+{txt}50%    {res}     .502                      {txt}Mean          {res}     .502
+                        {txt}Largest       Std. dev.     {res} .2432447
+{txt}75%    {res}     .674              .
+{txt}90%    {res}     .674              .       {txt}Variance      {res}  .059168
+{txt}95%    {res}     .674            .33       {txt}Skewness      {res} 4.26e-16
+{txt}99%    {res}     .674           .674       {txt}Kurtosis      {res}        1
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = Yes, intra2 = .
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}       .6             .6
+{txt} 5%    {res}       .6              .
+{txt}10%    {res}       .6              .       {txt}Obs         {res}          1
+{txt}25%    {res}       .6              .       {txt}Sum of wgt. {res}          1
+
+{txt}50%    {res}       .6                      {txt}Mean          {res}       .6
+                        {txt}Largest       Std. dev.     {res}        .
+{txt}75%    {res}       .6              .
+{txt}90%    {res}       .6              .       {txt}Variance      {res}        .
+{txt}95%    {res}       .6              .       {txt}Skewness      {res}        .
+{txt}99%    {res}       .6             .6       {txt}Kurtosis      {res}        .
+
+{txt}
+{com}. 
+. local outB1 "4output/Table 2B1 IED Study-level summary - by design and rater type.xlsx"
+{txt}
+{com}. collect export "`outB1'", replace
+{res}{txt}{p 0 1 2}
+(collection {res:Table} exported to file {browse "C:/Midlertidig_Lagring/SysRevReproEeg/6Manuscript2/v1/4output/Table 2B1 IED Study-level summary - by design and rater type.xlsx":4output/Table 2B1 IED Study-level summary - by design and rater type.xlsx})
+{p_end}
+
+{com}. cap {c -(}
+{txt}
+{com}. 
+. * --- Table B2: Agreement type × Short Clips × Clinical setting ---
+. study_level_stats, by(gAgreementType3 ShortClips2 intra2 gEEGSetting2) ///
+>         title("Table B2: Study-level - Statistic × Study design × Clinical setting")
+
+=== Table B2: Study-level - Statistic × Study design × Clinical setting ===
+Stratified by: gAgreementType3 ShortClips2 intra2 gEEGSetting2
+{res}
+Study-level statistics (each study counts once):
+
+{smcl}
+{reset}{...}
+{hline 28}{c -}{c TT}{c -}{c -}{hline 6}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 27}
+{space 28} {c |}  Median   Minimum value   Maximum value   Number of nonmissing values
+{hline 28}{c -}{c +}{c -}{c -}{hline 6}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 27}
+Statistic{space 19} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+  Agreement{space 17} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+    Short clips{space 13} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+      No{space 20} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+        Rating type{space 9} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+          No{space 16} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+            Clinical setting {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+              Epilepsy{space 6} {c |}  {space 3}{result:.69}   {space 9}{result:.132}   {space 11}{result:.9}   {space 26}{result:7}
+              Other{space 9} {c |}  {space 3}{result:.78}   {space 11}{result:.4}   {space 10}{result:.98}   {space 26}{result:3}
+          Yes{space 15} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+            Clinical setting {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+              Epilepsy{space 6} {c |}  {space 3}{result:.86}   {space 10}{result:.86}   {space 10}{result:.86}   {space 26}{result:1}
+              Other{space 9} {c |}  {result:.84965}   {space 7}{result:.84965}   {space 7}{result:.84965}   {space 26}{result:1}
+      Yes{space 19} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+        Rating type{space 9} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+          No{space 16} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+            Clinical setting {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+              Epilepsy{space 6} {c |}  {space 1}{result:.8701}   {space 11}{result:.8}   {space 8}{result:.9402}   {space 26}{result:2}
+          Yes{space 15} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+            Clinical setting {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+              Epilepsy{space 6} {c |}  {space 3}{result:.82}   {space 10}{result:.82}   {space 10}{result:.82}   {space 26}{result:1}
+  Kappa-type{space 16} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+    Short clips{space 13} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+      No{space 20} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+        Rating type{space 9} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+          No{space 16} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+            Clinical setting {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+              Acute Brain{space 3} {c |}  {space 3}{result:.36}   {space 10}{result:.26}   {space 9}{result:.735}   {space 26}{result:3}
+              Epilepsy{space 6} {c |}  {space 2}{result:.695}   {space 11}{result:.5}   {space 10}{result:.82}   {space 26}{result:8}
+              Other{space 9} {c |}  {space 3}{result:.63}   {space 10}{result:.23}   {space 12}{result:1}   {space 26}{result:5}
+          Yes{space 15} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+            Clinical setting {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+              Acute Brain{space 3} {c |}  {space 3}{result:.94}   {space 10}{result:.94}   {space 10}{result:.94}   {space 26}{result:1}
+              Other{space 9} {c |}  {result:.61635}   {space 7}{result:.61635}   {space 7}{result:.61635}   {space 26}{result:1}
+      Yes{space 19} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+        Rating type{space 9} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+          No{space 16} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+            Clinical setting {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+              Acute Brain{space 3} {c |}  {space 3}{result:.44}   {space 10}{result:.31}   {space 10}{result:.57}   {space 26}{result:2}
+              Epilepsy{space 6} {c |}  {space 2}{result:.475}   {space 10}{result:.31}   {space 9}{result:.705}   {space 26}{result:9}
+              Other{space 9} {c |}  {space 3}{result:.81}   {space 10}{result:.81}   {space 10}{result:.81}   {space 26}{result:1}
+          Yes{space 15} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+            Clinical setting {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+              Epilepsy{space 6} {c |}  {space 2}{result:.502}   {space 10}{result:.33}   {space 9}{result:.674}   {space 26}{result:2}
+{hline 28}{c -}{c BT}{c -}{c -}{hline 6}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 27}
+
+Detail by stratum:
+
+{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = No, intra2 = No, gEEGSetting2 = Epilepsy
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}     .132           .132
+{txt} 5%    {res}     .132           .325
+{txt}10%    {res}     .132           .458       {txt}Obs         {res}          7
+{txt}25%    {res}     .325            .69       {txt}Sum of wgt. {res}          7
+
+{txt}50%    {res}      .69                      {txt}Mean          {res} .5802143
+                        {txt}Largest       Std. dev.     {res} .2810679
+{txt}75%    {res}      .79            .69
+{txt}90%    {res}       .9          .7665       {txt}Variance      {res} .0789992
+{txt}95%    {res}       .9            .79       {txt}Skewness      {res} -.476483
+{txt}99%    {res}       .9             .9       {txt}Kurtosis      {res} 1.824811
+
+{txt}{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = No, intra2 = No, gEEGSetting2 = Other
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}       .4             .4
+{txt} 5%    {res}       .4            .78
+{txt}10%    {res}       .4            .98       {txt}Obs         {res}          3
+{txt}25%    {res}       .4              .       {txt}Sum of wgt. {res}          3
+
+{txt}50%    {res}      .78                      {txt}Mean          {res}      .72
+                        {txt}Largest       Std. dev.     {res} .2946184
+{txt}75%    {res}      .98              .
+{txt}90%    {res}      .98             .4       {txt}Variance      {res}    .0868
+{txt}95%    {res}      .98            .78       {txt}Skewness      {res}-.3586178
+{txt}99%    {res}      .98            .98       {txt}Kurtosis      {res}      1.5
+
+{txt}{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = No, intra2 = Yes, gEEGSetting2 = Epilepsy
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .86            .86
+{txt} 5%    {res}      .86              .
+{txt}10%    {res}      .86              .       {txt}Obs         {res}          1
+{txt}25%    {res}      .86              .       {txt}Sum of wgt. {res}          1
+
+{txt}50%    {res}      .86                      {txt}Mean          {res}      .86
+                        {txt}Largest       Std. dev.     {res}        .
+{txt}75%    {res}      .86              .
+{txt}90%    {res}      .86              .       {txt}Variance      {res}        .
+{txt}95%    {res}      .86              .       {txt}Skewness      {res}        .
+{txt}99%    {res}      .86            .86       {txt}Kurtosis      {res}        .
+
+{txt}{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = No, intra2 = Yes, gEEGSetting2 = Other
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}   .84965         .84965
+{txt} 5%    {res}   .84965              .
+{txt}10%    {res}   .84965              .       {txt}Obs         {res}          1
+{txt}25%    {res}   .84965              .       {txt}Sum of wgt. {res}          1
+
+{txt}50%    {res}   .84965                      {txt}Mean          {res}   .84965
+                        {txt}Largest       Std. dev.     {res}        .
+{txt}75%    {res}   .84965              .
+{txt}90%    {res}   .84965              .       {txt}Variance      {res}        .
+{txt}95%    {res}   .84965              .       {txt}Skewness      {res}        .
+{txt}99%    {res}   .84965         .84965       {txt}Kurtosis      {res}        .
+
+{txt}{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = Yes, intra2 = No, gEEGSetting2 = Epilepsy
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}       .8             .8
+{txt} 5%    {res}       .8          .9402
+{txt}10%    {res}       .8              .       {txt}Obs         {res}          2
+{txt}25%    {res}       .8              .       {txt}Sum of wgt. {res}          2
+
+{txt}50%    {res}    .8701                      {txt}Mean          {res}    .8701
+                        {txt}Largest       Std. dev.     {res} .0991364
+{txt}75%    {res}    .9402              .
+{txt}90%    {res}    .9402              .       {txt}Variance      {res}  .009828
+{txt}95%    {res}    .9402             .8       {txt}Skewness      {res}        0
+{txt}99%    {res}    .9402          .9402       {txt}Kurtosis      {res}        1
+
+{txt}{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = Yes, intra2 = Yes, gEEGSetting2 = Epilepsy
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .82            .82
+{txt} 5%    {res}      .82              .
+{txt}10%    {res}      .82              .       {txt}Obs         {res}          1
+{txt}25%    {res}      .82              .       {txt}Sum of wgt. {res}          1
+
+{txt}50%    {res}      .82                      {txt}Mean          {res}      .82
+                        {txt}Largest       Std. dev.     {res}        .
+{txt}75%    {res}      .82              .
+{txt}90%    {res}      .82              .       {txt}Variance      {res}        .
+{txt}95%    {res}      .82              .       {txt}Skewness      {res}        .
+{txt}99%    {res}      .82            .82       {txt}Kurtosis      {res}        .
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = No, intra2 = No, gEEGSetting2 = Acute Brain
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .26            .26
+{txt} 5%    {res}      .26            .36
+{txt}10%    {res}      .26           .735       {txt}Obs         {res}          3
+{txt}25%    {res}      .26              .       {txt}Sum of wgt. {res}          3
+
+{txt}50%    {res}      .36                      {txt}Mean          {res} .4516667
+                        {txt}Largest       Std. dev.     {res} .2504163
+{txt}75%    {res}     .735              .
+{txt}90%    {res}     .735            .26       {txt}Variance      {res} .0627083
+{txt}95%    {res}     .735            .36       {txt}Skewness      {res} .5823777
+{txt}99%    {res}     .735           .735       {txt}Kurtosis      {res}      1.5
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = No, intra2 = No, gEEGSetting2 = Epilepsy
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}       .5             .5
+{txt} 5%    {res}       .5          .5905
+{txt}10%    {res}       .5             .6       {txt}Obs         {res}          8
+{txt}25%    {res}   .59525            .66       {txt}Sum of wgt. {res}          8
+
+{txt}50%    {res}     .695                      {txt}Mean          {res} .6856875
+                        {txt}Largest       Std. dev.     {res} .1167271
+{txt}75%    {res}    .7925            .73
+{txt}90%    {res}      .82            .77       {txt}Variance      {res} .0136252
+{txt}95%    {res}      .82           .815       {txt}Skewness      {res}-.2534453
+{txt}99%    {res}      .82            .82       {txt}Kurtosis      {res} 1.745466
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = No, intra2 = No, gEEGSetting2 = Other
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .23            .23
+{txt} 5%    {res}      .23            .57
+{txt}10%    {res}      .23            .63       {txt}Obs         {res}          5
+{txt}25%    {res}      .57            .98       {txt}Sum of wgt. {res}          5
+
+{txt}50%    {res}      .63                      {txt}Mean          {res}     .682
+                        {txt}Largest       Std. dev.     {res} .3199531
+{txt}75%    {res}      .98            .57
+{txt}90%    {res}        1            .63       {txt}Variance      {res}   .10237
+{txt}95%    {res}        1            .98       {txt}Skewness      {res}-.3009819
+{txt}99%    {res}        1              1       {txt}Kurtosis      {res} 1.789695
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = No, intra2 = Yes, gEEGSetting2 = Acute Brain
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .94            .94
+{txt} 5%    {res}      .94              .
+{txt}10%    {res}      .94              .       {txt}Obs         {res}          1
+{txt}25%    {res}      .94              .       {txt}Sum of wgt. {res}          1
+
+{txt}50%    {res}      .94                      {txt}Mean          {res}      .94
+                        {txt}Largest       Std. dev.     {res}        .
+{txt}75%    {res}      .94              .
+{txt}90%    {res}      .94              .       {txt}Variance      {res}        .
+{txt}95%    {res}      .94              .       {txt}Skewness      {res}        .
+{txt}99%    {res}      .94            .94       {txt}Kurtosis      {res}        .
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = No, intra2 = Yes, gEEGSetting2 = Other
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}   .61635         .61635
+{txt} 5%    {res}   .61635              .
+{txt}10%    {res}   .61635              .       {txt}Obs         {res}          1
+{txt}25%    {res}   .61635              .       {txt}Sum of wgt. {res}          1
+
+{txt}50%    {res}   .61635                      {txt}Mean          {res}   .61635
+                        {txt}Largest       Std. dev.     {res}        .
+{txt}75%    {res}   .61635              .
+{txt}90%    {res}   .61635              .       {txt}Variance      {res}        .
+{txt}95%    {res}   .61635              .       {txt}Skewness      {res}        .
+{txt}99%    {res}   .61635         .61635       {txt}Kurtosis      {res}        .
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = Yes, intra2 = No, gEEGSetting2 = Acute Brain
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .31            .31
+{txt} 5%    {res}      .31            .57
+{txt}10%    {res}      .31              .       {txt}Obs         {res}          2
+{txt}25%    {res}      .31              .       {txt}Sum of wgt. {res}          2
+
+{txt}50%    {res}      .44                      {txt}Mean          {res}      .44
+                        {txt}Largest       Std. dev.     {res} .1838478
+{txt}75%    {res}      .57              .
+{txt}90%    {res}      .57              .       {txt}Variance      {res}    .0338
+{txt}95%    {res}      .57            .31       {txt}Skewness      {res} 5.92e-16
+{txt}99%    {res}      .57            .57       {txt}Kurtosis      {res}        1
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = Yes, intra2 = No, gEEGSetting2 = Epilepsy
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .31            .31
+{txt} 5%    {res}      .31           .345
+{txt}10%    {res}      .31            .43       {txt}Obs         {res}          9
+{txt}25%    {res}      .43           .435       {txt}Sum of wgt. {res}          9
+
+{txt}50%    {res}     .475                      {txt}Mean          {res} .4740556
+                        {txt}Largest       Std. dev.     {res} .1206722
+{txt}75%    {res}      .49          .4765
+{txt}90%    {res}     .705            .49       {txt}Variance      {res} .0145618
+{txt}95%    {res}     .705             .6       {txt}Skewness      {res}  .574131
+{txt}99%    {res}     .705           .705       {txt}Kurtosis      {res} 2.721835
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = Yes, intra2 = No, gEEGSetting2 = Other
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .81            .81
+{txt} 5%    {res}      .81              .
+{txt}10%    {res}      .81              .       {txt}Obs         {res}          1
+{txt}25%    {res}      .81              .       {txt}Sum of wgt. {res}          1
+
+{txt}50%    {res}      .81                      {txt}Mean          {res}      .81
+                        {txt}Largest       Std. dev.     {res}        .
+{txt}75%    {res}      .81              .
+{txt}90%    {res}      .81              .       {txt}Variance      {res}        .
+{txt}95%    {res}      .81              .       {txt}Skewness      {res}        .
+{txt}99%    {res}      .81            .81       {txt}Kurtosis      {res}        .
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = Yes, intra2 = Yes, gEEGSetting2 = Epilepsy
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .33            .33
+{txt} 5%    {res}      .33           .674
+{txt}10%    {res}      .33              .       {txt}Obs         {res}          2
+{txt}25%    {res}      .33              .       {txt}Sum of wgt. {res}          2
+
+{txt}50%    {res}     .502                      {txt}Mean          {res}     .502
+                        {txt}Largest       Std. dev.     {res} .2432447
+{txt}75%    {res}     .674              .
+{txt}90%    {res}     .674              .       {txt}Variance      {res}  .059168
+{txt}95%    {res}     .674            .33       {txt}Skewness      {res} 4.26e-16
+{txt}99%    {res}     .674           .674       {txt}Kurtosis      {res}        1
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = Yes, intra2 = ., gEEGSetting2 = Epilepsy
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}       .6             .6
+{txt} 5%    {res}       .6              .
+{txt}10%    {res}       .6              .       {txt}Obs         {res}          1
+{txt}25%    {res}       .6              .       {txt}Sum of wgt. {res}          1
+
+{txt}50%    {res}       .6                      {txt}Mean          {res}       .6
+                        {txt}Largest       Std. dev.     {res}        .
+{txt}75%    {res}       .6              .
+{txt}90%    {res}       .6              .       {txt}Variance      {res}        .
+{txt}95%    {res}       .6              .       {txt}Skewness      {res}        .
+{txt}99%    {res}       .6             .6       {txt}Kurtosis      {res}        .
+
+{txt}
+{com}. 
+. local outB2 "4output/Table 2B2 IED Study-level summary - by design setting rater.xlsx"
+{txt}
+{com}. collect export "`outB2'", replace
+{res}{txt}{p 0 1 2}
+(collection {res:Table} exported to file {browse "C:/Midlertidig_Lagring/SysRevReproEeg/6Manuscript2/v1/4output/Table 2B2 IED Study-level summary - by design setting rater.xlsx":4output/Table 2B2 IED Study-level summary - by design setting rater.xlsx})
+{p_end}
+
+{com}. cap {c -(}
+{txt}
+{com}. 
+. * --- Table B3: Agreement type × Short Clips × Rater experience ---
+. study_level_stats, by(gAgreementType3 ShortClips2 intra2 raterExp4) ///
+>         title("Table B3: Study-level - Statistic × Study design × Rater experience")
+
+=== Table B3: Study-level - Statistic × Study design × Rater experience ===
+Stratified by: gAgreementType3 ShortClips2 intra2 raterExp4
+{res}
+Study-level statistics (each study counts once):
+
+{smcl}
+{reset}{...}
+{hline 28}{c -}{c TT}{c -}{c -}{hline 6}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 27}
+{space 28} {c |}  Median   Minimum value   Maximum value   Number of nonmissing values
+{hline 28}{c -}{c +}{c -}{c -}{hline 6}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 27}
+Statistic{space 19} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+  Agreement{space 17} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+    Short clips{space 13} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+      No{space 20} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+        Rating type{space 9} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+          No{space 16} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+            Rater experience {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+              Experienced{space 3} {c |}  {space 4}{result:.9}   {space 11}{result:.9}   {space 11}{result:.9}   {space 26}{result:1}
+  Kappa-type{space 16} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+    Short clips{space 13} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+      No{space 20} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+        Rating type{space 9} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+          No{space 16} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+            Rater experience {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+              Experienced{space 3} {c |}  {space 2}{result:.565}   {space 10}{result:.36}   {space 10}{result:.77}   {space 26}{result:2}
+      Yes{space 19} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+        Rating type{space 9} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+          No{space 16} {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+            Rater experience {c |}  {space 6}   {space 13}   {space 13}   {space 27}
+              Experienced{space 3} {c |}  {space 3}{result:.44}   {space 10}{result:.31}   {space 10}{result:.57}   {space 26}{result:2}
+{hline 28}{c -}{c BT}{c -}{c -}{hline 6}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 13}{c -}{c -}{c -}{hline 27}
+
+Detail by stratum:
+
+{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = No, intra2 = No, raterExp4 = Experienced
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}       .9             .9
+{txt} 5%    {res}       .9              .
+{txt}10%    {res}       .9              .       {txt}Obs         {res}          1
+{txt}25%    {res}       .9              .       {txt}Sum of wgt. {res}          1
+
+{txt}50%    {res}       .9                      {txt}Mean          {res}       .9
+                        {txt}Largest       Std. dev.     {res}        .
+{txt}75%    {res}       .9              .
+{txt}90%    {res}       .9              .       {txt}Variance      {res}        .
+{txt}95%    {res}       .9              .       {txt}Skewness      {res}        .
+{txt}99%    {res}       .9             .9       {txt}Kurtosis      {res}        .
+
+{txt}{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = No, intra2 = No, raterExp4 = .
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}     .132           .132
+{txt} 5%    {res}     .132           .325
+{txt}10%    {res}     .132             .4       {txt}Obs         {res}          9
+{txt}25%    {res}       .4           .458       {txt}Sum of wgt. {res}          9
+
+{txt}50%    {res}      .69                      {txt}Mean          {res} .5912778
+                        {txt}Largest       Std. dev.     {res} .2745111
+{txt}75%    {res}      .78          .7665
+{txt}90%    {res}      .98            .78       {txt}Variance      {res} .0753563
+{txt}95%    {res}      .98            .79       {txt}Skewness      {res}-.2914608
+{txt}99%    {res}      .98            .98       {txt}Kurtosis      {res}  1.92848
+
+{txt}{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = No, intra2 = Yes, raterExp4 = .
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}   .84965         .84965
+{txt} 5%    {res}   .84965            .86
+{txt}10%    {res}   .84965              .       {txt}Obs         {res}          2
+{txt}25%    {res}   .84965              .       {txt}Sum of wgt. {res}          2
+
+{txt}50%    {res}  .854825                      {txt}Mean          {res}  .854825
+                        {txt}Largest       Std. dev.     {res} .0073186
+{txt}75%    {res}      .86              .
+{txt}90%    {res}      .86              .       {txt}Variance      {res} .0000536
+{txt}95%    {res}      .86         .84965       {txt}Skewness      {res} 3.21e-14
+{txt}99%    {res}      .86            .86       {txt}Kurtosis      {res}        1
+
+{txt}{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = Yes, intra2 = No, raterExp4 = .
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}       .8             .8
+{txt} 5%    {res}       .8          .9402
+{txt}10%    {res}       .8              .       {txt}Obs         {res}          2
+{txt}25%    {res}       .8              .       {txt}Sum of wgt. {res}          2
+
+{txt}50%    {res}    .8701                      {txt}Mean          {res}    .8701
+                        {txt}Largest       Std. dev.     {res} .0991364
+{txt}75%    {res}    .9402              .
+{txt}90%    {res}    .9402              .       {txt}Variance      {res}  .009828
+{txt}95%    {res}    .9402             .8       {txt}Skewness      {res}        0
+{txt}99%    {res}    .9402          .9402       {txt}Kurtosis      {res}        1
+
+{txt}{hline}
+-> gAgreementType3 = Agreement, ShortClips2 = Yes, intra2 = Yes, raterExp4 = .
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .82            .82
+{txt} 5%    {res}      .82              .
+{txt}10%    {res}      .82              .       {txt}Obs         {res}          1
+{txt}25%    {res}      .82              .       {txt}Sum of wgt. {res}          1
+
+{txt}50%    {res}      .82                      {txt}Mean          {res}      .82
+                        {txt}Largest       Std. dev.     {res}        .
+{txt}75%    {res}      .82              .
+{txt}90%    {res}      .82              .       {txt}Variance      {res}        .
+{txt}95%    {res}      .82              .       {txt}Skewness      {res}        .
+{txt}99%    {res}      .82            .82       {txt}Kurtosis      {res}        .
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = No, intra2 = No, raterExp4 = Experienced
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .36            .36
+{txt} 5%    {res}      .36            .77
+{txt}10%    {res}      .36              .       {txt}Obs         {res}          2
+{txt}25%    {res}      .36              .       {txt}Sum of wgt. {res}          2
+
+{txt}50%    {res}     .565                      {txt}Mean          {res}     .565
+                        {txt}Largest       Std. dev.     {res} .2899138
+{txt}75%    {res}      .77              .
+{txt}90%    {res}      .77              .       {txt}Variance      {res}   .08405
+{txt}95%    {res}      .77            .36       {txt}Skewness      {res} 7.05e-16
+{txt}99%    {res}      .77            .77       {txt}Kurtosis      {res}        1
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = No, intra2 = No, raterExp4 = .
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .23            .23
+{txt} 5%    {res}      .23            .26
+{txt}10%    {res}      .26             .5       {txt}Obs         {res}         14
+{txt}25%    {res}      .57            .57       {txt}Sum of wgt. {res}         14
+
+{txt}50%    {res}     .645                      {txt}Mean          {res} .6514643
+                        {txt}Largest       Std. dev.     {res} .2261824
+{txt}75%    {res}     .815           .815
+{txt}90%    {res}      .98            .82       {txt}Variance      {res} .0511585
+{txt}95%    {res}        1            .98       {txt}Skewness      {res}-.3533209
+{txt}99%    {res}        1              1       {txt}Kurtosis      {res} 2.647529
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = No, intra2 = Yes, raterExp4 = .
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}   .61635         .61635
+{txt} 5%    {res}   .61635            .94
+{txt}10%    {res}   .61635              .       {txt}Obs         {res}          2
+{txt}25%    {res}   .61635              .       {txt}Sum of wgt. {res}          2
+
+{txt}50%    {res}  .778175                      {txt}Mean          {res}  .778175
+                        {txt}Largest       Std. dev.     {res} .2288551
+{txt}75%    {res}      .94              .
+{txt}90%    {res}      .94              .       {txt}Variance      {res} .0523747
+{txt}95%    {res}      .94         .61635       {txt}Skewness      {res}        0
+{txt}99%    {res}      .94            .94       {txt}Kurtosis      {res}        1
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = Yes, intra2 = No, raterExp4 = Experienced
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .31            .31
+{txt} 5%    {res}      .31            .57
+{txt}10%    {res}      .31              .       {txt}Obs         {res}          2
+{txt}25%    {res}      .31              .       {txt}Sum of wgt. {res}          2
+
+{txt}50%    {res}      .44                      {txt}Mean          {res}      .44
+                        {txt}Largest       Std. dev.     {res} .1838478
+{txt}75%    {res}      .57              .
+{txt}90%    {res}      .57              .       {txt}Variance      {res}    .0338
+{txt}95%    {res}      .57            .31       {txt}Skewness      {res} 5.92e-16
+{txt}99%    {res}      .57            .57       {txt}Kurtosis      {res}        1
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = Yes, intra2 = No, raterExp4 = .
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .31            .31
+{txt} 5%    {res}      .31           .345
+{txt}10%    {res}    .3275            .43       {txt}Obs         {res}         10
+{txt}25%    {res}      .43           .435       {txt}Sum of wgt. {res}         10
+
+{txt}50%    {res}   .47575                      {txt}Mean          {res}   .50765
+                        {txt}Largest       Std. dev.     {res} .1556588
+{txt}75%    {res}       .6            .49
+{txt}90%    {res}    .7575             .6       {txt}Variance      {res} .0242297
+{txt}95%    {res}      .81           .705       {txt}Skewness      {res} .7194209
+{txt}99%    {res}      .81            .81       {txt}Kurtosis      {res}   2.5737
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = Yes, intra2 = Yes, raterExp4 = .
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}      .33            .33
+{txt} 5%    {res}      .33           .674
+{txt}10%    {res}      .33              .       {txt}Obs         {res}          2
+{txt}25%    {res}      .33              .       {txt}Sum of wgt. {res}          2
+
+{txt}50%    {res}     .502                      {txt}Mean          {res}     .502
+                        {txt}Largest       Std. dev.     {res} .2432447
+{txt}75%    {res}     .674              .
+{txt}90%    {res}     .674              .       {txt}Variance      {res}  .059168
+{txt}95%    {res}     .674            .33       {txt}Skewness      {res} 4.26e-16
+{txt}99%    {res}     .674           .674       {txt}Kurtosis      {res}        1
+
+{txt}{hline}
+-> gAgreementType3 = Kappa-type, ShortClips2 = Yes, intra2 = ., raterExp4 = .
+
+                    (p 50) agreementvalue
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}       .6             .6
+{txt} 5%    {res}       .6              .
+{txt}10%    {res}       .6              .       {txt}Obs         {res}          1
+{txt}25%    {res}       .6              .       {txt}Sum of wgt. {res}          1
+
+{txt}50%    {res}       .6                      {txt}Mean          {res}       .6
+                        {txt}Largest       Std. dev.     {res}        .
+{txt}75%    {res}       .6              .
+{txt}90%    {res}       .6              .       {txt}Variance      {res}        .
+{txt}95%    {res}       .6              .       {txt}Skewness      {res}        .
+{txt}99%    {res}       .6             .6       {txt}Kurtosis      {res}        .
+
+{txt}
+{com}. 
+. local outB3 "4output/Table 2B3 IED Study-level summary - by design experience rater.xlsx"
+{txt}
+{com}. collect export "`outB3'", replace
+{res}{txt}{p 0 1 2}
+(collection {res:Table} exported to file {browse "C:/Midlertidig_Lagring/SysRevReproEeg/6Manuscript2/v1/4output/Table 2B3 IED Study-level summary - by design experience rater.xlsx":4output/Table 2B3 IED Study-level summary - by design experience rater.xlsx})
+{p_end}
+
+{com}. cap {c -(}
+{txt}
+{com}. 
+. *==============================================================================
+. * PART C: Comparison of approaches A and B
+. * Quick summary for the 4 main cells (the 2×2 forest plot grid)
+. *==============================================================================
+. 
+. di _n(3) "============================================================"
+{res}
+
+
+============================================================
+{txt}
+{com}. di "PART C: COMPARISON - Data-point vs Study-level medians"
+{res}PART C: COMPARISON - Data-point vs Study-level medians
+{txt}
+{com}. di "For the 4 main forest plot cells"
+{res}For the 4 main forest plot cells
+{txt}
+{com}. di "============================================================"
+{res}============================================================
+{txt}
+{com}. 
+. use "$working", clear
+{txt}
+{com}. 
+. * Loop over the 4 main cells
+. foreach atype in "Agreement" "Kappa-type" {c -(}
+{txt}  2{com}.         foreach rtype in "Yes" "No" {c -(}
+{txt}  3{com}.                 if "`rtype'" == "Yes" local rlabel "Intrarater"
+{txt}  4{com}.                 if "`rtype'" == "No"  local rlabel "Interrater"
+{txt}  5{com}. 
+.                 di _n "--- `atype' / `rlabel' ---"
+{txt}  6{com}. 
+.                 * Data-point level
+.                 qui summ agreementvalue if agreementType3 == "`atype'" & intra_or_inter == "`rtype'", det
+{txt}  7{com}.                 local dp_median = `r(p50)'
+{txt}  8{com}.                 local dp_min = `r(min)'
+{txt}  9{com}.                 local dp_max = `r(max)'
+{txt} 10{com}.                 local dp_n = `r(N)'
+{txt} 11{com}.                 di "  Data-point level: median = " %5.2f `dp_median' ///
+>                         "  range = " %5.2f `dp_min' " - " %5.2f `dp_max' ///
+>                         "  N datapoints = " `dp_n'
+{txt} 12{com}. 
+.                 * Study level
+.                 preserve
+{txt} 13{com}.                 keep if agreementType3 == "`atype'" & intra_or_inter == "`rtype'"
+{txt} 14{com}.                 collapse (median) med_agreement = agreementvalue ///
+>                         (count) n_dp = agreementvalue, by(REFID)
+{txt} 15{com}.                 qui summ med_agreement, det
+{txt} 16{com}.                 local sl_median = `r(p50)'
+{txt} 17{com}.                 local sl_min = `r(min)'
+{txt} 18{com}.                 local sl_max = `r(max)'
+{txt} 19{com}.                 local sl_n = `r(N)'
+{txt} 20{com}.                 di "  Study level:      median = " %5.2f `sl_median' ///
+>                         "  range = " %5.2f `sl_min' " - " %5.2f `sl_max' ///
+>                         "  N studies = " `sl_n'
+{txt} 21{com}. 
+.                 local diff = `dp_median' - `sl_median'
+{txt} 22{com}.                 di "  Difference (dp - study): " %5.2f `diff'
+{txt} 23{com}. 
+.                 * Show data points per study
+.                 di "  Data points per study:"
+{txt} 24{com}.                 list REFID n_dp, sep(0) noobs
+{txt} 25{com}.                 restore
+{txt} 26{com}.         {c )-}
+{txt} 27{com}. {c )-}
+
+--- Agreement / Intrarater ---
+  Data-point level: median =  0.85  range =  0.82 -  0.92  N datapoints = 6
+{txt}(163 observations deleted)
+{res}  Study level:      median =  0.85  range =  0.82 -  0.86  N studies = 3
+  Difference (dp - study):  0.00
+  Data points per study:
+{txt}
+  {c TLC}{hline 7}{c -}{hline 6}{c TRC}
+  {c |} {res}REFID   n_dp {txt}{c |}
+  {c LT}{hline 7}{c -}{hline 6}{c RT}
+  {c |} {res}   22      1 {txt}{c |}
+  {c |} {res}   35      1 {txt}{c |}
+  {c |} {res}  110      4 {txt}{c |}
+  {c BLC}{hline 7}{c -}{hline 6}{c BRC}
+
+--- Agreement / Interrater ---
+  Data-point level: median =  0.71  range =  0.07 -  0.98  N datapoints = 26
+(143 observations deleted)
+{res}  Study level:      median =  0.77  range =  0.13 -  0.98  N studies = 12
+  Difference (dp - study): -0.07
+  Data points per study:
+{txt}
+  {c TLC}{hline 7}{c -}{hline 6}{c TRC}
+  {c |} {res}REFID   n_dp {txt}{c |}
+  {c LT}{hline 7}{c -}{hline 6}{c RT}
+  {c |} {res}   15      1 {txt}{c |}
+  {c |} {res}   35      6 {txt}{c |}
+  {c |} {res}   37      3 {txt}{c |}
+  {c |} {res}   43      3 {txt}{c |}
+  {c |} {res}   81      3 {txt}{c |}
+  {c |} {res}   86      3 {txt}{c |}
+  {c |} {res}  109      1 {txt}{c |}
+  {c |} {res}  189      1 {txt}{c |}
+  {c |} {res}  230      1 {txt}{c |}
+  {c |} {res}  236      2 {txt}{c |}
+  {c |} {res}  248      1 {txt}{c |}
+  {c |} {res}  268      1 {txt}{c |}
+  {c BLC}{hline 7}{c -}{hline 6}{c BRC}
+
+--- Kappa-type / Intrarater ---
+  Data-point level: median =  0.67  range =  0.33 -  0.94  N datapoints = 17
+(152 observations deleted)
+{res}  Study level:      median =  0.65  range =  0.33 -  0.94  N studies = 4
+  Difference (dp - study):  0.03
+  Data points per study:
+{txt}
+  {c TLC}{hline 7}{c -}{hline 6}{c TRC}
+  {c |} {res}REFID   n_dp {txt}{c |}
+  {c LT}{hline 7}{c -}{hline 6}{c RT}
+  {c |} {res}  110      4 {txt}{c |}
+  {c |} {res}  136      1 {txt}{c |}
+  {c |} {res}  247      3 {txt}{c |}
+  {c |} {res}  448      9 {txt}{c |}
+  {c BLC}{hline 7}{c -}{hline 6}{c BRC}
+
+--- Kappa-type / Interrater ---
+  Data-point level: median =  0.63  range =  0.00 -  1.00  N datapoints = 113
+(56 observations deleted)
+{res}  Study level:      median =  0.58  range =  0.23 -  1.00  N studies = 28
+  Difference (dp - study):  0.05
+  Data points per study:
+{txt}
+  {c TLC}{hline 7}{c -}{hline 6}{c TRC}
+  {c |} {res}REFID   n_dp {txt}{c |}
+  {c LT}{hline 7}{c -}{hline 6}{c RT}
+  {c |} {res}   37      3 {txt}{c |}
+  {c |} {res}   77     28 {txt}{c |}
+  {c |} {res}   78      2 {txt}{c |}
+  {c |} {res}   86      3 {txt}{c |}
+  {c |} {res}   94      2 {txt}{c |}
+  {c |} {res}  103      8 {txt}{c |}
+  {c |} {res}  109      1 {txt}{c |}
+  {c |} {res}  115      1 {txt}{c |}
+  {c |} {res}  136      1 {txt}{c |}
+  {c |} {res}  176      1 {txt}{c |}
+  {c |} {res}  181      1 {txt}{c |}
+  {c |} {res}  184      4 {txt}{c |}
+  {c |} {res}  186      1 {txt}{c |}
+  {c |} {res}  213      3 {txt}{c |}
+  {c |} {res}  227      1 {txt}{c |}
+  {c |} {res}  230      1 {txt}{c |}
+  {c |} {res}  232      2 {txt}{c |}
+  {c |} {res}  236      2 {txt}{c |}
+  {c |} {res}  247      2 {txt}{c |}
+  {c |} {res}  248      1 {txt}{c |}
+  {c |} {res}  253      4 {txt}{c |}
+  {c |} {res}  266      4 {txt}{c |}
+  {c |} {res}  268      1 {txt}{c |}
+  {c |} {res}  280      2 {txt}{c |}
+  {c |} {res}  406      2 {txt}{c |}
+  {c |} {res}  413      3 {txt}{c |}
+  {c |} {res}  443     23 {txt}{c |}
+  {c |} {res}  448      6 {txt}{c |}
+  {c BLC}{hline 7}{c -}{hline 6}{c BRC}
+
+{com}. 
+. *==============================================================================
+. * Finish
+. *==============================================================================
+. 
+. di _n(2) "All Table 2 outputs saved to 4output/"
+{res}
+
+All Table 2 outputs saved to 4output/
+{txt}
+{com}. di "  Part A (data-point level): Table 2A1, 2A2, 2A3"
+{res}  Part A (data-point level): Table 2A1, 2A2, 2A3
+{txt}
+{com}. di "  Part B (study level): Table 2B1, 2B2, 2B3"
+{res}  Part B (study level): Table 2B1, 2B2, 2B3
+{txt}
+{com}. 
+. * Clean up temp file
+. cap erase "$working"
+{txt}
+{com}. 
+. count
+  {res}169
+{txt}
+{com}. cap log close
+{smcl}
+{com}{sf}{ul off}

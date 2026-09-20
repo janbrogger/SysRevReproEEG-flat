@@ -1,0 +1,1 @@
+Ziljmans 2002: The study reports interobserver agreement only in selected index patients after categorization based on agreement thresholds in EEG. Reliability metrics for the full unselected cohort are not provided, rendering the data non-extractable and biased for the purposes of estimating reproducibility of routine EEG interpretation.

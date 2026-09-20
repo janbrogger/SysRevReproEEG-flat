@@ -1,0 +1,1191 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:\Midlertidig_Lagring\sysrevreproeeg\3CleanData\log\05-abstract-features-on-design-level.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}17 Mar 2026, 13:43:47
+{txt}
+{com}. *ssc install title
+. *ssc install findname
+. pwd
+{res}C:\Midlertidig_Lagring\sysrevreproeeg\3CleanData
+{txt}
+{com}. 
+. use "C:\Midlertidig_Lagring\sysrevreproeeg\3CleanData\data-cleaned\1designleveldata-varscleaned", clear
+{txt}
+{com}. 
+. title "Extract agreement types for each reference from feature-level data"
+
+
+{res}*******************************************************************************
+*******************************************************************************
+*****                                                                     *****
+*****                                                                     *****
+***** Extract agreement types for each reference from feature-level data  *****
+*****                                                                     *****
+*****                                                                     *****
+*****                                            17 Mar 2026    13:43:47  *****
+*******************************************************************************
+*******************************************************************************
+
+
+{txt}
+{com}. use "C:\Midlertidig_Lagring\sysrevreproeeg\3CleanData\data-cleaned\2featuredata-cleaned" , clear
+{txt}
+{com}. levelsof agreementType2
+{res}{txt}`"Brennan and Prediger kappa"' `"Cohen's kappa"' `"Cohen's quadratically weighted kappa"' `"Cronbach's alpha"' `"Fleiss' kappa"' `"Fleiss' kappa, aggregate"' `"Free-Marginal Multirater Kappa (kFree)"' `"Gwet's AC1"' `"Gwet's AC2"' `"ICC"' `"Kappa 5 pairs median"' `"Krippendorff's alpha"' `"Mean kappa"' `"Mean or median Kappa 2 raters across neonates"' `"Median 3-rater kappa"' `"Median Cohen's kappa"' `"Median agreement"' `"Median majority kappa"' `"Median majority perfect agreement"' `"Median pairwise kappa"' `"Median pairwise perfect agreement"' `"Percent agreement 5 pairs median"' `"Spearman–Brown prophecy reliability coefficient"' `"Unadjusted agreement"' `"Unadjusted agreement, aggregate"' `"Unweighted kappa"' `"Weighted kappa - quadratic weights"' `"Weighted kappa - unknown weights"' `"Weighted kappa - unspecified weights"' `"Weighted kappa, unknown average method"' `"Weighted unadjusted agreement"' `"mean Cohen's kappa"'
+
+{com}. local i=0
+{txt}
+{com}. foreach t in `r(levels)' {c -(}
+{txt}  2{com}.         local i=`i'+1   
+{txt}  3{com}.         gen hasAgreementType2_`i'=agreementType2=="`t'"
+{txt}  4{com}.         label variable hasAgreementType2_`i' "`t'"      
+{txt}  5{com}. {c )-}
+{txt}
+{com}. 
+. contract REFID hasAgreementType2_*
+{res}{txt}
+{com}. drop _freq
+{txt}
+{com}. sort REFID
+{txt}
+{com}. foreach v of varlist hasAgreementType2_* {c -(}
+{txt}  2{com}.         egen x`v'=max(`v') , by(REFID)
+{txt}  3{com}.         local lab : variable label `v'
+{txt}  4{com}.         label variable x`v' "`lab'"
+{txt}  5{com}. {c )-}
+{txt}
+{com}. contract REFID xhasAgreementType2_*
+{res}{txt}
+{com}. foreach v of varlist xhasAgreementType2_* {c -(}
+{txt}  2{com}.         local newv = substr("`v'",2,.)
+{txt}  3{com}.         rename `v' `newv'
+{txt}  4{com}. {c )-}
+{res}{txt}
+{com}. count
+  {res}296
+{txt}
+{com}. foreach v of varlist hasAgreementType2_* {c -(}
+{txt}  2{com}.         tab `v'
+{txt}  3{com}. {c )-}
+
+{txt}Brennan and {c |}
+   Prediger {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        294       99.32       99.32
+{txt}          1 {c |}{res}          2        0.68      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Cohen's {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        149       50.34       50.34
+{txt}          1 {c |}{res}        147       49.66      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Cohen's {c |}
+quadratical {c |}
+ly weighted {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Cronbach's {c |}
+      alpha {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        294       99.32       99.32
+{txt}          1 {c |}{res}          2        0.68      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Fleiss' {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        239       80.74       80.74
+{txt}          1 {c |}{res}         57       19.26      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Fleiss' {c |}
+     kappa, {c |}
+  aggregate {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        294       99.32       99.32
+{txt}          1 {c |}{res}          2        0.68      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+{txt}Free-Margin {c |}
+         al {c |}
+ Multirater {c |}
+      Kappa {c |}
+    (kFree) {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Gwet's AC1 {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        276       93.24       93.24
+{txt}          1 {c |}{res}         20        6.76      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Gwet's AC2 {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        288       97.30       97.30
+{txt}          1 {c |}{res}          8        2.70      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+        {txt}ICC {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        262       88.51       88.51
+{txt}          1 {c |}{res}         34       11.49      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Kappa 5 {c |}
+      pairs {c |}
+     median {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+{txt}Krippendorf {c |}
+  f's alpha {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Mean kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Mean or {c |}
+     median {c |}
+    Kappa 2 {c |}
+     raters {c |}
+     across {c |}
+   neonates {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+    3-rater {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+    Cohen's {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+  agreement {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+   majority {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+   majority {c |}
+    perfect {c |}
+  agreement {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+   pairwise {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+   pairwise {c |}
+    perfect {c |}
+  agreement {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Percent {c |}
+agreement 5 {c |}
+      pairs {c |}
+     median {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+  {txt}Spearman– {c |}
+      Brown {c |}
+   prophecy {c |}
+reliability {c |}
+coefficient {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Unadjusted {c |}
+  agreement {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        172       58.11       58.11
+{txt}          1 {c |}{res}        124       41.89      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Unadjusted {c |}
+ agreement, {c |}
+  aggregate {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Unweighted {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+   {txt}Weighted {c |}
+    kappa - {c |}
+  quadratic {c |}
+    weights {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+   {txt}Weighted {c |}
+    kappa - {c |}
+    unknown {c |}
+    weights {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+   {txt}Weighted {c |}
+    kappa - {c |}
+unspecified {c |}
+    weights {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+   {txt}Weighted {c |}
+     kappa, {c |}
+    unknown {c |}
+    average {c |}
+     method {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+   {txt}Weighted {c |}
+ unadjusted {c |}
+  agreement {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+       {txt}mean {c |}
+    Cohen's {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+{txt}
+{com}. tempfile agreementTypes2
+{txt}
+{com}. save "`agreementTypes2'"
+{txt}{p 0 4 2}
+file {bf}
+C:\Users\jcbr\AppData\Local\Temp\ST_85f4_000001.tmp{rm}
+saved
+as .dta format
+{p_end}
+
+{com}. 
+. title "Extract broad categories of agreement types for each reference from feature-level data"
+
+
+{res}*******************************************************************************
+*******************************************************************************
+*****                                                                     *****
+*****                                                                     *****
+*****Extract broad categories of agreement types for each reference from feature-level data*****
+*****                                                                     *****
+*****                                                                     *****
+*****                                            17 Mar 2026    13:43:47  *****
+*******************************************************************************
+*******************************************************************************
+
+
+{txt}
+{com}. use "C:\Midlertidig_Lagring\sysrevreproeeg\3CleanData\data-cleaned\2featuredata-cleaned" , clear
+{txt}
+{com}. levelsof agreementType3
+{res}{txt}`"Agreement"' `"Kappa-type"' `"Kappa-type, aggregate"' `"Unadjusted agreement, aggregate"'
+
+{com}. local i=0
+{txt}
+{com}. foreach t in `r(levels)' {c -(}
+{txt}  2{com}.         local i=`i'+1   
+{txt}  3{com}.         gen hasAgreementType3_`i'=agreementType3=="`t'"
+{txt}  4{com}.         label variable hasAgreementType3_`i' "`t'"      
+{txt}  5{com}. {c )-}
+{txt}
+{com}. 
+. contract REFID hasAgreementType3_*
+{res}{txt}
+{com}. drop _freq
+{txt}
+{com}. sort REFID
+{txt}
+{com}. foreach v of varlist hasAgreementType3_* {c -(}
+{txt}  2{com}.         egen x`v'=max(`v') , by(REFID)
+{txt}  3{com}.         local lab : variable label `v'
+{txt}  4{com}.         label variable x`v' "`lab'"
+{txt}  5{com}. {c )-}
+{txt}
+{com}. contract REFID xhasAgreementType3_*
+{res}{txt}
+{com}. foreach v of varlist xhasAgreementType3_* {c -(}
+{txt}  2{com}.         local newv = substr("`v'",2,.)
+{txt}  3{com}.         rename `v' `newv'
+{txt}  4{com}. {c )-}
+{res}{txt}
+{com}. count
+  {res}296
+{txt}
+{com}. foreach v of varlist hasAgreementType3* {c -(}
+{txt}  2{com}.         tab `v'
+{txt}  3{com}. {c )-}
+
+  {txt}Agreement {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        172       58.11       58.11
+{txt}          1 {c |}{res}        124       41.89      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Kappa-type {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}         58       19.59       19.59
+{txt}          1 {c |}{res}        238       80.41      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+{txt}Kappa-type, {c |}
+  aggregate {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        294       99.32       99.32
+{txt}          1 {c |}{res}          2        0.68      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Unadjusted {c |}
+ agreement, {c |}
+  aggregate {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+{txt}
+{com}. tempfile agreementTypes3
+{txt}
+{com}. save "`agreementTypes3'"
+{txt}{p 0 4 2}
+file {bf}
+C:\Users\jcbr\AppData\Local\Temp\ST_85f4_000002.tmp{rm}
+saved
+as .dta format
+{p_end}
+
+{com}. 
+. title "Extract feature count and a feature string for each study"
+
+
+{res}*******************************************************************************
+*******************************************************************************
+*****                                                                     *****
+*****                                                                     *****
+*****     Extract feature count and a feature string for each study       *****
+*****                                                                     *****
+*****                                                                     *****
+*****                                            17 Mar 2026    13:43:47  *****
+*******************************************************************************
+*******************************************************************************
+
+
+{txt}
+{com}. use "C:\Midlertidig_Lagring\sysrevreproeeg\3CleanData\data-cleaned\2featuredata-cleaned" , clear
+{txt}
+{com}. contract REFID featurescored
+{res}{txt}
+{com}. drop _freq
+{txt}
+{com}. sort REFID
+{txt}
+{com}. by REFID: gen featurecount=_N
+{txt}
+{com}. sort REFID, stable
+{txt}
+{com}. by REFID : gen allfeaturenames = featurescored[1]
+{txt}(1 missing value generated)
+
+{com}. by REFID : replace allfeaturenames= allfeaturenames[_n-1] + ";" + featurescored  if _n > 1
+{txt}(625 real changes made)
+
+{com}. by REFID : replace allfeaturenames = allfeaturenames[_N]
+{txt}(625 real changes made)
+
+{com}. count
+  {res}921
+{txt}
+{com}. contract REFID featurecount allfeaturenames
+{res}{txt}
+{com}. count
+  {res}296
+{txt}
+{com}. drop _freq
+{txt}
+{com}. 
+. label variable featurecount "Count of features studied"
+{txt}
+{com}. label variable allfeaturenames "All EEG features studied, separated by semicolon."
+{txt}
+{com}. 
+. tempfile featurenames
+{txt}
+{com}. save "`featurenames'"
+{txt}{p 0 4 2}
+file {bf}
+C:\Users\jcbr\AppData\Local\Temp\ST_85f4_000003.tmp{rm}
+saved
+as .dta format
+{p_end}
+
+{com}. 
+. 
+. use "C:\Midlertidig_Lagring\sysrevreproeeg\3CleanData\data-cleaned\1designleveldata-varscleaned", clear
+{txt}
+{com}. merge 1:1 REFID using "`agreementTypes2'"
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}             296{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. drop _merge
+{txt}
+{com}. merge 1:1 REFID using "`agreementTypes3'"
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}             296{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. drop _merge
+{txt}
+{com}. di "Agreement types prevalence among studies, narrow categories"
+{res}Agreement types prevalence among studies, narrow categories
+{txt}
+{com}. foreach v of varlist hasAgreementType2_* {c -(}
+{txt}  2{com}.         tab `v'
+{txt}  3{com}. {c )-}       
+
+{txt}Brennan and {c |}
+   Prediger {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        294       99.32       99.32
+{txt}          1 {c |}{res}          2        0.68      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Cohen's {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        149       50.34       50.34
+{txt}          1 {c |}{res}        147       49.66      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Cohen's {c |}
+quadratical {c |}
+ly weighted {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Cronbach's {c |}
+      alpha {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        294       99.32       99.32
+{txt}          1 {c |}{res}          2        0.68      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Fleiss' {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        239       80.74       80.74
+{txt}          1 {c |}{res}         57       19.26      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Fleiss' {c |}
+     kappa, {c |}
+  aggregate {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        294       99.32       99.32
+{txt}          1 {c |}{res}          2        0.68      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+{txt}Free-Margin {c |}
+         al {c |}
+ Multirater {c |}
+      Kappa {c |}
+    (kFree) {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Gwet's AC1 {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        276       93.24       93.24
+{txt}          1 {c |}{res}         20        6.76      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Gwet's AC2 {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        288       97.30       97.30
+{txt}          1 {c |}{res}          8        2.70      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+        {txt}ICC {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        262       88.51       88.51
+{txt}          1 {c |}{res}         34       11.49      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Kappa 5 {c |}
+      pairs {c |}
+     median {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+{txt}Krippendorf {c |}
+  f's alpha {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Mean kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Mean or {c |}
+     median {c |}
+    Kappa 2 {c |}
+     raters {c |}
+     across {c |}
+   neonates {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+    3-rater {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+    Cohen's {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+  agreement {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+   majority {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+   majority {c |}
+    perfect {c |}
+  agreement {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+   pairwise {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+     {txt}Median {c |}
+   pairwise {c |}
+    perfect {c |}
+  agreement {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+    {txt}Percent {c |}
+agreement 5 {c |}
+      pairs {c |}
+     median {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+  {txt}Spearman– {c |}
+      Brown {c |}
+   prophecy {c |}
+reliability {c |}
+coefficient {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Unadjusted {c |}
+  agreement {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        172       58.11       58.11
+{txt}          1 {c |}{res}        124       41.89      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Unadjusted {c |}
+ agreement, {c |}
+  aggregate {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Unweighted {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+   {txt}Weighted {c |}
+    kappa - {c |}
+  quadratic {c |}
+    weights {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+   {txt}Weighted {c |}
+    kappa - {c |}
+    unknown {c |}
+    weights {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+   {txt}Weighted {c |}
+    kappa - {c |}
+unspecified {c |}
+    weights {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+   {txt}Weighted {c |}
+     kappa, {c |}
+    unknown {c |}
+    average {c |}
+     method {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+   {txt}Weighted {c |}
+ unadjusted {c |}
+  agreement {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+       {txt}mean {c |}
+    Cohen's {c |}
+      kappa {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+{txt}
+{com}. di "Agreement types prevalence among studies, broad categories"
+{res}Agreement types prevalence among studies, broad categories
+{txt}
+{com}. foreach v of varlist hasAgreementType3_* {c -(}
+{txt}  2{com}.         tab `v'
+{txt}  3{com}. {c )-}
+
+  {txt}Agreement {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        172       58.11       58.11
+{txt}          1 {c |}{res}        124       41.89      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Kappa-type {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}         58       19.59       19.59
+{txt}          1 {c |}{res}        238       80.41      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+{txt}Kappa-type, {c |}
+  aggregate {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        294       99.32       99.32
+{txt}          1 {c |}{res}          2        0.68      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+
+ {txt}Unadjusted {c |}
+ agreement, {c |}
+  aggregate {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+{txt}
+{com}. tab hasAgreementType3_1
+
+  {txt}Agreement {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        172       58.11       58.11
+{txt}          1 {c |}{res}        124       41.89      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+{txt}
+{com}. tab hasAgreementType3_2
+
+ {txt}Kappa-type {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}         58       19.59       19.59
+{txt}          1 {c |}{res}        238       80.41      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+{txt}
+{com}. tab hasAgreementType3_3
+
+{txt}Kappa-type, {c |}
+  aggregate {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        294       99.32       99.32
+{txt}          1 {c |}{res}          2        0.68      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+{txt}
+{com}. tab hasAgreementType3_4
+
+ {txt}Unadjusted {c |}
+ agreement, {c |}
+  aggregate {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        295       99.66       99.66
+{txt}          1 {c |}{res}          1        0.34      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+{txt}
+{com}. 
+. 
+. gen hasAgreementType4=hasAgreementType3_1==1 | hasAgreementType3_2==1
+{txt}
+{com}. label variable hasAgreementType4 "Has agreement type kappa or agreement non-aggregate"
+{txt}
+{com}. tab hasAgreementType4
+
+        {txt}Has {c |}
+  agreement {c |}
+ type kappa {c |}
+         or {c |}
+  agreement {c |}
+non-aggrega {c |}
+         te {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}          7        2.36        2.36
+{txt}          1 {c |}{res}        289       97.64      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        296      100.00
+{txt}
+{com}. 
+. gen hasAgreementType5=""
+{txt}(296 missing values generated)
+
+{com}. replace hasAgreementType5="Agreement only" if hasAgreementType3_1==1 & hasAgreementType3_2==0
+{txt}variable {bf}{res}hasAgreementType5{sf}{txt} was {bf}{res}str1{sf}{txt} now {bf}{res}str14{sf}
+{txt}(51 real changes made)
+
+{com}. replace hasAgreementType5="Kappa-type only" if hasAgreementType3_1==0 & hasAgreementType3_2==1
+{txt}variable {bf}{res}hasAgreementType5{sf}{txt} was {bf}{res}str14{sf}{txt} now {bf}{res}str15{sf}
+{txt}(165 real changes made)
+
+{com}. replace hasAgreementType5="Both agreement and kappa-type" if hasAgreementType3_1==1 & hasAgreementType3_2==1
+{txt}variable {bf}{res}hasAgreementType5{sf}{txt} was {bf}{res}str15{sf}{txt} now {bf}{res}str29{sf}
+{txt}(73 real changes made)
+
+{com}. replace hasAgreementType5="Only aggregates" if hasAgreementType4==0
+{txt}(7 real changes made)
+
+{com}. 
+. label variable hasAgreementType5 "Agreement types combination "
+{txt}
+{com}. tab hasAgreementType5 , missi
+
+ {txt}Agreement types combination  {c |}      Freq.     Percent        Cum.
+{hline 30}{c +}{hline 35}
+               Agreement only {c |}{res}         51       17.23       17.23
+{txt}Both agreement and kappa-type {c |}{res}         73       24.66       41.89
+{txt}              Kappa-type only {c |}{res}        165       55.74       97.64
+{txt}              Only aggregates {c |}{res}          7        2.36      100.00
+{txt}{hline 30}{c +}{hline 35}
+                        Total {c |}{res}        296      100.00
+{txt}
+{com}. *encode hasAgreementType5 , gen(hasAgreementType5b)
+. *drop hasAgreementType5
+. *rename hasAgreementType5b hasAgreementType5
+. 
+. 
+. merge 1:1 REFID using "`featurenames'"
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}             296{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. drop _merge
+{txt}
+{com}. 
+. 
+. 
+. title "Extract intrarater interrater from features and design level questions"
+
+
+{res}*******************************************************************************
+*******************************************************************************
+*****                                                                     *****
+*****                                                                     *****
+*****Extract intrarater interrater from features and design level questions*****
+*****                                                                     *****
+*****                                                                     *****
+*****                                            17 Mar 2026    13:43:47  *****
+*******************************************************************************
+*******************************************************************************
+
+
+{txt}
+{com}. preserve
+{txt}
+{com}. use "C:\Midlertidig_Lagring\sysrevreproeeg\3CleanData\data-cleaned\2featuredata-cleaned" , clear
+{txt}
+{com}. encode intra_or_inter , gen(intra_or_inter2)
+{txt}
+{com}. tab intra_or_inter2
+
+{txt}Intra-rater {c |}
+          ? {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         No {c |}{res}      2,246       86.92       86.92
+{txt}        Yes {c |}{res}        338       13.08      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}      2,584      100.00
+{txt}
+{com}. tab intra_or_inter2, nol
+
+{txt}Intra-rater {c |}
+          ? {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          1 {c |}{res}      2,246       86.92       86.92
+{txt}          2 {c |}{res}        338       13.08      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}      2,584      100.00
+{txt}
+{com}. collapse (max) intra_or_inter_max=intra_or_inter2 (min) intra_or_inter_min=intra_or_inter2 , by(REFID)
+{res}{txt}
+{com}. sort REFID
+{txt}
+{com}. tab intra_or_inter_max intra_or_inter_min
+
+     {txt}(max) {c |}
+intra_or_i {c |} (min) intra_or_inter2
+     nter2 {c |}         1          2 {c |}     Total
+{hline 11}{c +}{hline 22}{c +}{hline 10}
+         1 {c |}{res}       261          0 {txt}{c |}{res}       261 
+{txt}         2 {c |}{res}        17          5 {txt}{c |}{res}        22 
+{txt}{hline 11}{c +}{hline 22}{c +}{hline 10}
+     Total {c |}{res}       278          5 {txt}{c |}{res}       283 
+{txt}
+{com}. gen raterIntraType=""
+{txt}(296 missing values generated)
+
+{com}. replace raterIntraType="Interrater only" if intra_or_inter_max==1 & intra_or_inter_min==1
+{txt}variable {bf}{res}raterIntraType{sf}{txt} was {bf}{res}str1{sf}{txt} now {bf}{res}str15{sf}
+{txt}(261 real changes made)
+
+{com}. replace raterIntraType="Intrarater only" if intra_or_inter_max==2 & intra_or_inter_min==2
+{txt}(5 real changes made)
+
+{com}. replace raterIntraType="Inter- and intrarater" if intra_or_inter_max==2 & intra_or_inter_min==1
+{txt}variable {bf}{res}raterIntraType{sf}{txt} was {bf}{res}str15{sf}{txt} now {bf}{res}str21{sf}
+{txt}(17 real changes made)
+
+{com}. label variable raterIntraType "Study-level inter- and intrarater type (from features)"
+{txt}
+{com}. tab raterIntraType
+
+   {txt}Study-level inter- {c |}
+  and intrarater type {c |}
+      (from features) {c |}      Freq.     Percent        Cum.
+{hline 22}{c +}{hline 35}
+Inter- and intrarater {c |}{res}         17        6.01        6.01
+{txt}      Interrater only {c |}{res}        261       92.23       98.23
+{txt}      Intrarater only {c |}{res}          5        1.77      100.00
+{txt}{hline 22}{c +}{hline 35}
+                Total {c |}{res}        283      100.00
+{txt}
+{com}. keep REFID raterIntraType
+{txt}
+{com}. tempfile intratypes
+{txt}
+{com}. save "`intratypes'"
+{txt}{p 0 4 2}
+file {bf}
+C:\Users\jcbr\AppData\Local\Temp\ST_85f4_000005.tmp{rm}
+saved
+as .dta format
+{p_end}
+
+{com}. restore
+{txt}
+{com}. 
+. merge 1:1 REFID using "`intratypes'"
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}             296{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. drop _merge
+{txt}
+{com}. 
+. title "Cleanup done intrarater"
+
+
+{res}*******************************************************************************
+*******************************************************************************
+*****                                                                     *****
+*****                                                                     *****
+*****                      Cleanup done intrarater                        *****
+*****                                                                     *****
+*****                                                                     *****
+*****                                            17 Mar 2026    13:43:47  *****
+*******************************************************************************
+*******************************************************************************
+
+
+{txt}
+{com}. tab raterIntraType IntraRater
+
+                      {txt}{c |} Q201 Does this paper
+                      {c |}    contain data on
+   Study-level inter- {c |}      intra-rater
+  and intrarater type {c |}   reproducibility?
+      (from features) {c |}        No        Yes {c |}     Total
+{hline 22}{c +}{hline 22}{c +}{hline 10}
+Inter- and intrarater {c |}{res}         0         17 {txt}{c |}{res}        17 
+{txt}      Interrater only {c |}{res}       261          0 {txt}{c |}{res}       261 
+{txt}      Intrarater only {c |}{res}         0          5 {txt}{c |}{res}         5 
+{txt}{hline 22}{c +}{hline 22}{c +}{hline 10}
+                Total {c |}{res}       261         22 {txt}{c |}{res}       283 
+{txt}
+{com}. list REFID Author Year if raterIntraType=="Inter- and intrarater" & IntraRater=="No"
+{txt}
+{com}. list REFID Author Year if raterIntraType=="Intrarater only" & IntraRater=="No"
+{txt}
+{com}. 
+. title "Import RaterExperience from design-level data"
+
+
+{res}*******************************************************************************
+*******************************************************************************
+*****                                                                     *****
+*****                                                                     *****
+*****           Import RaterExperience from design-level data             *****
+*****                                                                     *****
+*****                                                                     *****
+*****                                            17 Mar 2026    13:43:47  *****
+*******************************************************************************
+*******************************************************************************
+
+
+{txt}
+{com}. merge m:1 REFID using "C:\Midlertidig_Lagring\sysrevreproeeg\3CleanData\data-cleaned\1designleveldata-varscleaned", keepusing(RaterExperience)
+{res}{txt}(label {bf:{txt}gNumberOfEegsIncludedCat} already defined)
+(label {bf:{txt}gNumPatientsIncludedCat} already defined)
+(label {bf:{txt}gPercentKnownRefsCat} already defined)
+(label {bf:{txt}gNumRefsCat} already defined)
+(label {bf:{txt}gAgeCat1} already defined)
+
+{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}             296{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. drop _merge
+{txt}
+{com}. 
+. save "C:\Midlertidig_Lagring\sysrevreproeeg\3CleanData\data-cleaned\3designleveldata-varscleaned-with-featureabstract", replace
+{txt}{p 0 4 2}
+file {bf}
+C:\Midlertidig_Lagring\sysrevreproeeg\3CleanData\data-cleaned\3designleveldata-varscleaned-with-featureabstract.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. cap log close
+{smcl}
+{com}{sf}{ul off}

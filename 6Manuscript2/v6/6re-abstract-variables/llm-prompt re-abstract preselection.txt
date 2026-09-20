@@ -1,0 +1,24 @@
+You are assisting with data abstraction for a systematic review of reproducibility of visual EEG interpretation of **interictal epileptiform discharges (IEDs) present yes/no**.
+
+The goal is to determine the extent of any pre-selection for pathology, both in clinical non-EEG terms such as known diagnoses, and in EEG terms such as the EEG having been pre-reviewed.
+
+Carefully read the paper and extract the following information.
+
+Answer the following questions.
+If the paper does not provide this information, write **unclear**.
+
+1. Were the patients (and any EEGs, if used) pre-selected to have a known clinical diagnosis or a known EEG finding? Yes/no.
+2. Were the EEGs under review preselected for having known epileptiform interictal activity, before being assessed for reproducibility of epileptiform interictal activity by a human rater or computer program?
+3. If the study did not explicitly required presence of epileptiform interictal activity, was the sampling weighted towards including epileptiform interictal Activity?
+4. If the study used weighted sampling, was the sampling accounted for in when analyzing the reproducibility metrics?
+5. Briefly describe the clinical indication for EEG, or if not specificed, the patient population.
+6. Evidence from the paper. Quote or summarize the specific sentence(s) in the paper that justify your answers.
+7. Final structured output
+
+Provide the result in this exact format:
+Author
+Year
+Patients or EEGs preselected?
+EEGs preselected for epileptiform interictal ctivity?
+Notes:
+Evidence:

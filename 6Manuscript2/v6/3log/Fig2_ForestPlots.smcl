@@ -1,0 +1,388 @@
+{smcl}
+{txt}{sf}{ul off}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:\Midlertidig_Lagring\SysRevReproEeg\6Manuscript2\v1\3log/Fig1_ForestPlots.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}25 Feb 2026, 11:33:45
+{txt}
+{com}. 
+. pwd
+{res}C:\Midlertidig_Lagring\SysRevReproEeg\6Manuscript2\v1
+{txt}
+{com}. di "Script expects working directory to be 6Manuscript2/v1/"
+{res}Script expects working directory to be 6Manuscript2/v1/
+{txt}
+{com}. 
+. *==============================================================================
+. * Load filtered data
+. *==============================================================================
+. 
+. * Check if filtered data exists
+. cap confirm file "2data/filtered_data.dta"
+{txt}
+{com}. if _rc != 0 {c -(}
+.     di as error "filtered_data.dta not found. Running data extraction..."
+.     do "1script/00 Extract IED data.do"
+. {c )-}
+{txt}
+{com}. 
+. use "2data/filtered_data.dta", clear
+{txt}
+{com}. 
+. count
+  {res}169
+{txt}
+{com}. local totalobs = `r(N)'
+{txt}
+{com}. di "Total observations: `totalobs'"
+{res}Total observations: 169
+{txt}
+{com}. 
+. *==============================================================================
+. * Create EEG Setting variable for coloring
+. *==============================================================================
+. 
+. gen gEEGSetting = ""
+{txt}(169 missing values generated)
+
+{com}. replace gEEGSetting = "Epilepsy" if Q019TypeofEEGsettingbroad == "Epilepsy"
+{txt}variable {bf}{res}gEEGSetting{sf}{txt} was {bf}{res}str1{sf}{txt} now {bf}{res}str8{sf}
+{txt}(136 real changes made)
+
+{com}. replace gEEGSetting = "Acute Brain" if Q019TypeofEEGsettingbroad == "Coma/critical care, not neonatal or status epilepticus"
+{txt}variable {bf}{res}gEEGSetting{sf}{txt} was {bf}{res}str8{sf}{txt} now {bf}{res}str11{sf}
+{txt}(15 real changes made)
+
+{com}. replace gEEGSetting = "Other" if gEEGSetting == ""
+{txt}(18 real changes made)
+
+{com}. 
+. tab gEEGSetting
+
+{txt}gEEGSetting {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+Acute Brain {c |}{res}         15        8.88        8.88
+{txt}   Epilepsy {c |}{res}        136       80.47       89.35
+{txt}      Other {c |}{res}         18       10.65      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        169      100.00
+{txt}
+{com}. 
+. *==============================================================================
+. * Define the forest plot program
+. *==============================================================================
+. 
+. capture program drop IEDForestPlot
+{txt}
+{com}. program define IEDForestPlot
+{txt}  1{com}.     preserve
+{txt}  2{com}.     syntax [if] [, TITle(string) NAMe(string) XTItle(string) YTItle(string) NOTE(string)]
+{txt}  3{com}. 
+.     if `"`if'"' != `""' {c -(}
+{txt}  4{com}.         qui keep `if'
+{txt}  5{com}.     {c )-}
+{txt}  6{com}. 
+.     qui count
+{txt}  7{com}.     if `r(N)' == 0 {c -(}
+{txt}  8{com}.         di as err "No observations for this subset"
+{txt}  9{com}.         restore
+{txt} 10{com}.         exit
+{txt} 11{com}.     {c )-}
+{txt} 12{com}. 
+.     * Create author-year label
+.     local maxAuthorLen = 12
+{txt} 13{com}.     local clipLength = `maxAuthorLen' - 1
+{txt} 14{com}. 
+.     cap drop AuthorPlot
+{txt} 15{com}.     gen AuthorPlot = Author
+{txt} 16{com}. 
+.     * Sort by year, author, REFID
+.     gsort Year +Author REFID -gNumberOfEegElectrodes +isaverage +substudy
+{txt} 17{com}. 
+.     * Clip long author names
+.     qui replace AuthorPlot = substr(AuthorPlot, 1, `clipLength') + "." if strlen(AuthorPlot) > `maxAuthorLen'
+{txt} 18{com}. 
+.     * Add year
+.     qui replace AuthorPlot = AuthorPlot + " " + string(Year, "%4.0f")
+{txt} 19{com}. 
+.     * Add number of EEG electrodes if available
+.     qui replace AuthorPlot = AuthorPlot + " (" + string(gNumberOfEegElectrodes, "%2.0f") + ")" if gNumberOfEegElectrodes != .
+{txt} 20{com}. 
+.     format agreementvalue %3.2f
+{txt} 21{com}. 
+.     * Create y-index for plotting
+.     cap drop yindex
+{txt} 22{com}.     gen yindex = _n
+{txt} 23{com}. 
+.     * Position for author labels
+.     gen authorx = -0.25
+{txt} 24{com}. 
+.     * Handle duplicate author-years from different papers
+.     qui count
+{txt} 25{com}.     local N = `r(N)'
+{txt} 26{com}.     if `N' > 1 {c -(}
+{txt} 27{com}.         local previousAuthorPlot = AuthorPlot[1]
+{txt} 28{com}.         local previousREFID = REFID[1]
+{txt} 29{com}.         local suffix = 0
+{txt} 30{com}. 
+.         forvalues i = 2/`N' {c -(}
+{txt} 31{com}.             local thisAuthorPlot = AuthorPlot[`i']
+{txt} 32{com}.             local thisREFID = REFID[`i']
+{txt} 33{com}. 
+.             if "`thisAuthorPlot'" == "`previousAuthorPlot'" & `previousREFID' != `thisREFID' {c -(}
+{txt} 34{com}.                 local suffix = `suffix' + 1
+{txt} 35{com}.                 qui replace AuthorPlot = AuthorPlot + " [" + string(`suffix') + "]" if _n == `i'
+{txt} 36{com}.             {c )-}
+{txt} 37{com}. 
+.             local previousAuthorPlot = "`thisAuthorPlot'"
+{txt} 38{com}.             local previousREFID = `thisREFID'
+{txt} 39{com}.         {c )-}
+{txt} 40{com}. 
+.         * Clear duplicate labels within same study
+.         local previousAuthorPlot = AuthorPlot[1]
+{txt} 41{com}.         local previousREFID = REFID[1]
+{txt} 42{com}. 
+.         forvalues i = 2/`N' {c -(}
+{txt} 43{com}.             local thisAuthorPlot = AuthorPlot[`i']
+{txt} 44{com}.             local thisREFID = REFID[`i']
+{txt} 45{com}. 
+.             if "`thisAuthorPlot'" == "`previousAuthorPlot'" & `previousREFID' == `thisREFID' {c -(}
+{txt} 46{com}.                 qui replace AuthorPlot = "" if _n == `i'
+{txt} 47{com}.             {c )-}
+{txt} 48{com}.             else {c -(}
+{txt} 49{com}.                 local previousAuthorPlot = "`thisAuthorPlot'"
+{txt} 50{com}.                 local previousREFID = `thisREFID'
+{txt} 51{com}.             {c )-}
+{txt} 52{com}.         {c )-}
+{txt} 53{com}.     {c )-}
+{txt} 54{com}. 
+.     qui summ yindex
+{txt} 55{com}.     local countobs = `r(max)'
+{txt} 56{com}. 
+.     if "`name'" != "" {c -(}
+{txt} 57{com}.         cap graph drop `name'
+{txt} 58{com}.         local name2 " name(`name') "
+{txt} 59{com}.     {c )-}
+{txt} 60{com}. 
+.     * Create the forest plot
+.     * Colors: Epilepsy=blue, Acute Brain=green, Other=orange
+.     twoway ///
+>         (scatter yindex agreementvalue if gEEGSetting == "Epilepsy", ///
+>             msiz(small) ysc(rev) mcol(blue) msym(circle)) ///
+>         (scatter yindex agreementvalue if gEEGSetting == "Acute Brain", ///
+>             msiz(small) ysc(rev) mcol(green) msym(triangle)) ///
+>         (scatter yindex agreementvalue if gEEGSetting == "Other", ///
+>             msiz(small) ysc(rev) mcol(orange) msym(square)) ///
+>         (rcap agreementConfidenceIntervalLower agreementConfidenceIntervalUpper yindex ///
+>             if gEEGSetting == "Epilepsy" & agreementConfidenceIntervalLower != . & agreementConfidenceIntervalUpper != ., ///
+>             horizontal ysc(rev) lcol(blue)) ///
+>         (rcap agreementConfidenceIntervalLower agreementConfidenceIntervalUpper yindex ///
+>             if gEEGSetting == "Acute Brain" & agreementConfidenceIntervalLower != . & agreementConfidenceIntervalUpper != ., ///
+>             horizontal ysc(rev) lcol(green)) ///
+>         (rcap agreementConfidenceIntervalLower agreementConfidenceIntervalUpper yindex ///
+>             if gEEGSetting == "Other" & agreementConfidenceIntervalLower != . & agreementConfidenceIntervalUpper != ., ///
+>             horizontal ysc(rev) lcol(orange)) ///
+>         (scatter yindex authorx, mlab(AuthorPlot) mlabsize(vsmall) mlabcol(black) ms(none) ysc(rev)) ///
+>         , legend(order(1 "Epilepsy" 2 "Acute Brain" 3 "Other") rows(1) size(small) pos(6)) ///
+>         ylab(, nolab notick) ///
+>         yscale(lstyle(none)) ///
+>         yline(1(1)`countobs', lw(vvvthin) lcol(gs14)) ///
+>         title("`title'", size(small)) `name2' ///
+>         xtitle("`xtitle'", size(small)) ///
+>         ytitle("`ytitle'", size(small)) ///
+>         note("`note'") ///
+>         xlab(0 0.25 0.5 0.75 1.0, format(%3.2f)) ///
+>         xline(0 1, lcol(black) lw(vthin)) ///
+>         graphregion(color(white)) plotregion(color(white))
+{txt} 61{com}. 
+.     restore
+{txt} 62{com}. end
+{txt}
+{com}. 
+. *==============================================================================
+. * Create the four forest plots
+. *==============================================================================
+. 
+. * Keep only Agreement and Kappa-type statistics
+. tab agreementType3
+
+                 {txt}Agreement type {c |}      Freq.     Percent        Cum.
+{hline 32}{c +}{hline 35}
+                      Agreement {c |}{res}         32       18.93       18.93
+{txt}                     Kappa-type {c |}{res}        137       81.07      100.00
+{txt}{hline 32}{c +}{hline 35}
+                          Total {c |}{res}        169      100.00
+{txt}
+{com}. keep if agreementType3 == "Agreement" | agreementType3 == "Kappa-type"
+{txt}(0 observations deleted)
+
+{com}. 
+. * Check counts for each combination
+. di _n "=== Observation counts ==="
+{res}
+=== Observation counts ===
+{txt}
+{com}. count if agreementType3 == "Agreement" & intra_or_inter == "Yes"
+  {res}6
+{txt}
+{com}. di "Agreement Intrarater: `r(N)'"
+{res}Agreement Intrarater: 6
+{txt}
+{com}. count if agreementType3 == "Agreement" & intra_or_inter == "No"
+  {res}26
+{txt}
+{com}. di "Agreement Interrater: `r(N)'"
+{res}Agreement Interrater: 26
+{txt}
+{com}. count if agreementType3 == "Kappa-type" & intra_or_inter == "Yes"
+  {res}17
+{txt}
+{com}. di "Kappa Intrarater: `r(N)'"
+{res}Kappa Intrarater: 17
+{txt}
+{com}. count if agreementType3 == "Kappa-type" & intra_or_inter == "No"
+  {res}113
+{txt}
+{com}. di "Kappa Interrater: `r(N)'"
+{res}Kappa Interrater: 113
+{txt}
+{com}. 
+. * Turn off graphics display during individual plot creation
+. set graphics off
+{txt}
+{com}. 
+. * Create individual plots
+. IEDForestPlot if agreementType3 == "Agreement" & intra_or_inter == "Yes", ///
+>     title("Intrarater Agreement") name(agree_intra) xtitle("Agreement") ytitle("")
+{res}{txt}
+{com}. 
+. IEDForestPlot if agreementType3 == "Agreement" & intra_or_inter == "No", ///
+>     title("Interrater Agreement") name(agree_inter) xtitle("Agreement") ytitle("")
+{res}{txt}
+{com}. 
+. IEDForestPlot if agreementType3 == "Kappa-type" & intra_or_inter == "Yes", ///
+>     title("Intrarater Kappa") name(kappa_intra) xtitle("Kappa") ytitle("")
+{res}{txt}
+{com}. 
+. IEDForestPlot if agreementType3 == "Kappa-type" & intra_or_inter == "No", ///
+>     title("Interrater Kappa") name(kappa_inter) xtitle("Kappa") ytitle("")
+{res}{txt}
+{com}. 
+. set graphics on
+{txt}
+{com}. 
+. *==============================================================================
+. * Combine plots into 2x2 figure
+. *==============================================================================
+. 
+. graph combine agree_intra agree_inter kappa_intra kappa_inter, ///
+>     cols(2) ///
+>     title("Forest Plots: Reproducibility of Epileptiform Discharge Detection", size(medium)) ///
+>     note("Blue circle: Epilepsy setting. Green triangle: Acute Brain. Orange square: Other." ///
+>          "Author Year (# electrodes). Error bars show 95% CI where available.", size(vsmall)) ///
+>     imargin(small) ///
+>     graphregion(color(white)) ///
+>     name(combined_forest)
+{res}{txt}
+{com}. 
+. * Export combined figure
+. graph export "4output/Fig1_ForestPlots_IED.png", replace width(2400) height(1800)
+{txt}{p 0 4 2}
+(file {bf}
+4output/Fig1_ForestPlots_IED.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+4output/Fig1_ForestPlots_IED.png{rm}
+saved as
+PNG
+format
+{p_end}
+
+{com}. graph export "4output/Fig1_ForestPlots_IED.pdf", replace
+{txt}{p 0 4 2}
+file {bf}
+4output/Fig1_ForestPlots_IED.pdf{rm}
+saved as
+PDF
+format
+{p_end}
+
+{com}. 
+. * Also export as TIF for journal submission
+. cap graph export "4output/Fig1_ForestPlots_IED.tif", replace width(5784) height(4208)
+{txt}
+{com}. 
+. di _n "Combined forest plot saved to 4output/Fig1_ForestPlots_IED.png"
+{res}
+Combined forest plot saved to 4output/Fig1_ForestPlots_IED.png
+{txt}
+{com}. 
+. *==============================================================================
+. * Calculate and display summary statistics (mean and 95% CI)
+. *==============================================================================
+. 
+. di _n "===== Summary Statistics ====="
+{res}
+===== Summary Statistics =====
+{txt}
+{com}. 
+. * Reload data for clean calculations
+. use "2data/filtered_data.dta", clear
+{txt}
+{com}. keep if agreementType3 == "Agreement" | agreementType3 == "Kappa-type"
+{txt}(0 observations deleted)
+
+{com}. 
+. * Function to calculate mean and CI
+. capture program drop DisplayMeanCI
+{txt}
+{com}. program define DisplayMeanCI
+{txt}  1{com}.     syntax [if], label(string)
+{txt}  2{com}. 
+.     preserve
+{txt}  3{com}.     if `"`if'"' != `""' {c -(}
+{txt}  4{com}.         qui keep `if'
+{txt}  5{com}.     {c )-}
+{txt}  6{com}. 
+.     qui summ agreementvalue
+{txt}  7{com}.     local n = `r(N)'
+{txt}  8{com}.     local mean = `r(mean)'
+{txt}  9{com}.     local sd = `r(sd)'
+{txt} 10{com}.     local se = `sd' / sqrt(`n')
+{txt} 11{com}. 
+.     * 95% CI using t-distribution
+.     local t = invttail(`n' - 1, 0.025)
+{txt} 12{com}.     local ci_lower = `mean' - `t' * `se'
+{txt} 13{com}.     local ci_upper = `mean' + `t' * `se'
+{txt} 14{com}. 
+.     di "`label': Mean = " %5.3f `mean' " (95% CI: " %5.3f `ci_lower' " - " %5.3f `ci_upper' "), n = " `n'
+{txt} 15{com}. 
+.     restore
+{txt} 16{com}. end
+{txt}
+{com}. 
+. DisplayMeanCI if agreementType3 == "Agreement" & intra_or_inter == "Yes", label("Intrarater Agreement")
+Intrarater Agreement: Mean = 0.856 (95% CI: 0.822 - 0.890), n = 6
+{txt}
+{com}. DisplayMeanCI if agreementType3 == "Agreement" & intra_or_inter == "No", label("Interrater Agreement")
+Interrater Agreement: Mean = 0.619 (95% CI: 0.508 - 0.730), n = 26
+{txt}
+{com}. DisplayMeanCI if agreementType3 == "Kappa-type" & intra_or_inter == "Yes", label("Intrarater Kappa")
+Intrarater Kappa: Mean = 0.685 (95% CI: 0.605 - 0.764), n = 17
+{txt}
+{com}. DisplayMeanCI if agreementType3 == "Kappa-type" & intra_or_inter == "No", label("Interrater Kappa")
+Interrater Kappa: Mean = 0.571 (95% CI: 0.525 - 0.618), n = 113
+{txt}
+{com}. 
+. *==============================================================================
+. * Clean up
+. *==============================================================================
+. 
+. cap graph drop agree_intra agree_inter kappa_intra kappa_inter
+{txt}
+{com}. 
+. cap log close
+{smcl}
+{com}{sf}{ul off}
